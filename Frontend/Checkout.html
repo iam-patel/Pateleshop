@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout | Patel Shop</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background:url(checkout.webp);
+            margin: 0;
+            padding: 0;
+        }
+
+        .checkout-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        /* LEFT FORM */
+        .checkout-form {
+            flex: 2;
+            background: #fffdfd6e;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        .checkout-form h2 {
+            margin-bottom: 20px;
+            color: #070707;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        .payment-methods {
+            margin-top: 15px;
+        }
+
+        .payment-methods label {
+            font-weight: normal;
+            display: block;
+            margin: 8px 0;
+        }
+
+        .place-order {
+            margin-top: 25px;
+            width: 100%;
+            padding: 14px;
+            background: #fb641b;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .place-order:hover {
+            background: #e85b17;
+        }
+
+        .upi-section {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2222;
+            border-radius: 5px;
+            border: 1px solid #fb641b;
+        }
+
+        .upi-section.active {
+            display: block;
+        }
+
+        .card-section {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2222;
+            border-radius: 5px;
+            border: 1px solid #fb641b;
+        }
+
+        .card-section.active {
+            display: block;
+        }
+
+        .upi-section label,
+        .card-section label {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .upi-section input,
+        .card-section input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+        }
+
+        .card-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .card-row input {
+            flex: 1;
+        }
+
+        .payment-btn {
+            width: 100%;
+            padding: 12px;
+            background: #00a86b;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .payment-btn:hover {
+            background: #008c5a;
+        }
+
+        /* RIGHT SUMMARY */
+        .order-summary {
+            flex: 1;
+            background: #f7f6f660;
+            padding: 25px;
+            border-radius: 8px;
+            height: fit-content;
+        }
+
+        .order-summary h3 {
+            margin-bottom: 20px;
+            color: #000000;
+        }
+
+        .summary-item {
+            color: rgb(0, 0, 0);
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .checkout-container {
+                flex-direction: column;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="checkout-container">
+
+    <!-- LEFT -->
+    <div class="checkout-form">
+        <strong><b><h2>Checkout</h2></b></strong>
+
+        <label>Full Name</label>
+        <input type="text" id="name" placeholder="Enter your name">
+
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Enter your email">
+
+        <label>Mobile Number</label>
+        <input type="tel" id="phone" placeholder="Enter mobile number">
+
+        <label>Shipping Address</label>
+        <textarea rows="4" id="address" placeholder="Enter delivery address"></textarea>
+
+        <label>Payment Method</label>
+        <div class="payment-methods">
+            <label><input type="radio" name="payment" value="COD" onchange="togglePaymentMethod()"> Cash on Delivery</label>
+            <label><input type="radio" name="payment" value="Card" onchange="togglePaymentMethod()"> Credit / Debit Card</label>
+            <label><input type="radio" name="payment" value="UPI" onchange="togglePaymentMethod()"> UPI</label>
+        </div>
+
+        <label><input type="checkbox" id="savePayment"> Save this payment method for future use</label>
+
+        <div class="upi-section" id="upiSection">
+            <label>Enter UPI ID</label>
+            <input type="text" id="upiId" placeholder="example@paytm or example@upi">
+            <button class="payment-btn" onclick="placeOrder()">Pay with UPI</button>
+        </div>
+
+        <div class="card-section" id="cardSection">
+            <label>Card Number</label>
+            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+            
+            <div class="card-row">
+                <div>
+                    <label>Expiry (MM/YY)</label>
+                    <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div>
+                    <label>CVV</label>
+                    <input type="text" id="cardCVV" placeholder="123" maxlength="3">
+                </div>
+            </div>
+            
+            <label>Cardholder Name</label>
+            <input type="text" id="cardName" placeholder="Name on card">
+            <button class="payment-btn" onclick="placeOrder()">Pay with Card</button>
+        </div>
+
+        <button class="place-order" onclick="placeOrder()">Place Order</button>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="order-summary">
+        <h3>Order Summary</h3>
+        <div id="orderItems"></div>
+
+        <div class="summary-item">
+            <span>Product Price</span>
+            <span id="productPrice">₹0.00</span>
+        </div>
+
+        <div class="summary-item">
+            <span>Delivery Charge</span>
+            <span id="deliveryPrice">₹0.00</span>
+        </div>
+
+        <div class="summary-item total">
+            <span>Total</span>
+            <span id="totalPrice">₹0.00</span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const CART_KEY = 'patelShopCart';
+
+    // Get auth token from localStorage or sessionStorage
+    function getAuthToken() {
+        return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    }
+
+    // Get fetch headers with auth token
+    function getAuthHeaders() {
+        const token = getAuthToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
+    }
+
+    async function loadCart() {
+        try {
+            const response = await fetch('http://localhost:3000/api/cart', {
+                headers: getAuthHeaders()
+            });
+            const cart = await response.json();
+            return cart.items || [];
+        } catch (e) {
+            console.warn('loadCart fetch error', e);
+            return [];
+        }
+    }
+
+    function formatINR(amount) { return '₹' + Number(amount).toFixed(2); }
+
+    async function renderSummary() {
+        const items = await loadCart();
+        const subtotal = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (i.qty || 1), 0);
+        const delivery = subtotal > 0 ? 50 : 0;
+        const total = subtotal + delivery;
+        const prodEl = document.getElementById('productPrice');
+        const delEl = document.getElementById('deliveryPrice');
+        const totEl = document.getElementById('totalPrice');
+        if (prodEl) prodEl.textContent = formatINR(subtotal);
+        if (delEl) delEl.textContent = formatINR(delivery);
+        if (totEl) totEl.textContent = formatINR(total);
+        const placeBtn = document.querySelector('.place-order');
+        if (placeBtn) placeBtn.disabled = subtotal === 0;
+        // Render each cart item (thumbnail, name, qty, line total)
+        const itemsEl = document.getElementById('orderItems');
+        if(itemsEl){
+            itemsEl.innerHTML = '';
+            if(items.length === 0){
+                const empty = document.createElement('div');
+                empty.textContent = 'Your cart is empty.';
+                itemsEl.appendChild(empty);
+            } else {
+                items.forEach(it => {
+                    const row = document.createElement('div');
+                    row.className = 'summary-item';
+                    const left = document.createElement('div');
+                    left.style.display = 'flex'; left.style.alignItems = 'center'; left.style.gap = '8px';
+                    const img = document.createElement('img');
+                    img.src = it.img || '';
+                    img.alt = it.name || '';
+                    img.style.width = '64px'; img.style.height = '48px'; img.style.objectFit = 'cover'; img.style.borderRadius = '6px';
+                    const title = document.createElement('div');
+                    title.textContent = it.name + ((it.qty && it.qty>1) ? (' ×'+it.qty) : '');
+                    left.appendChild(img); left.appendChild(title);
+                    const lineTotal = (parseFloat(it.price) || 0) * (it.qty || 1);
+                    const right = document.createElement('div');
+                    right.textContent = formatINR(lineTotal);
+                    row.appendChild(left); row.appendChild(right);
+                    itemsEl.appendChild(row);
+                });
+            }
+        }
+    }
+
+    async function placeOrder() {
+        const token = getAuthToken();
+        console.log('Checkout: Auth token found:', !!token);
+        const items = await loadCart();
+        console.log('Loaded items:', items);
+        const subtotal = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (i.qty || 1), 0);
+        if (subtotal === 0) { alert('Your cart is empty. Add items before placing an order.'); return; }
+
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const phone = document.getElementById("phone").value;
+        const address = document.getElementById("address").value;
+        const payment = document.querySelector('input[name="payment"]:checked');
+
+        if (!name || !email || !phone || !address || !payment) {
+            alert("Please fill all details!");
+            return;
+        }
+
+        let paymentDetails = { method: payment.value };
+
+        // Validate UPI if selected
+        if (payment.value === 'UPI') {
+            const upiId = document.getElementById('upiId').value.trim();
+            if (!upiId) {
+                alert('Please enter your UPI ID!');
+                return;
+            }
+            const upiPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z]+$/;
+            if (!upiPattern.test(upiId)) {
+                alert('Please enter a valid UPI ID (e.g., yourname@paytm)');
+                return;
+            }
+            paymentDetails.upiId = upiId;
+        }
+
+        // Validate Card if selected
+        if (payment.value === 'Card') {
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const cardExpiry = document.getElementById('cardExpiry').value;
+            const cardCVV = document.getElementById('cardCVV').value;
+            const cardName = document.getElementById('cardName').value.trim();
+
+            if (!cardNumber || !cardExpiry || !cardCVV || !cardName) {
+                alert('Please fill all card details!');
+                return;
+            }
+
+            if (!/^\d{16}$/.test(cardNumber)) {
+                alert('Card number must be 16 digits!');
+                return;
+            }
+
+            if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+                alert('Expiry date must be in MM/YY format!');
+                return;
+            }
+
+            if (!/^\d{3}$/.test(cardCVV)) {
+                alert('CVV must be 3 digits!');
+                return;
+            }
+
+            paymentDetails.cardNumber = cardNumber.slice(-4);
+            paymentDetails.cardName = cardName;
+        }
+
+        // build order and save it to database
+        try {
+            const delivery = subtotal > 0 ? 50 : 0;
+            const total = subtotal + delivery;
+            const orderId = 'PS' + Date.now().toString().slice(-6);
+            const order = {
+                id: orderId,
+                date: new Date().toISOString(),
+                customer: { name, email, phone, address, payment: paymentDetails },
+                items: items,
+                subtotal: subtotal,
+                delivery: delivery,
+                total: total,
+                status: 'placed'
+            };
+            console.log('Sending order with headers:', getAuthHeaders());
+            console.log('Order data:', order);
+            const response = await fetch('http://localhost:3000/api/orders', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(order)
+            });
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || 'Failed to save order');
+            }
+            console.log('Order saved successfully:', response.status);
+
+            // clear cart after saving order
+            await fetch('http://localhost:3000/api/cart', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ items: [] })
+            });
+            renderSummary();
+
+            // save payment method if checked
+            if (document.getElementById('savePayment').checked && payment.value !== 'COD') {
+                const methodData = { type: payment.value, details: paymentDetails };
+                try {
+                    await fetch('http://localhost:3000/api/payment-methods', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(methodData)
+                    });
+                } catch (e) {
+                    console.warn('Failed to save payment method', e);
+                }
+            }
+
+            // Verify payment based on method
+            if (payment.value === 'COD') {
+                try {
+                    const codResponse = await fetch('http://localhost:3000/api/checkout/verify-cod', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ orderId })
+                    });
+                    if (!codResponse.ok) throw new Error('COD verification failed');
+                    console.log('COD verification successful');
+                } catch (e) {
+                    console.warn('COD verification error:', e);
+                }
+            } else if (payment.value === 'UPI') {
+                try {
+                    const upiId = paymentDetails.upiId;
+                    const upiResponse = await fetch('http://localhost:3000/api/verify-upi', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ 
+                            upiId, 
+                            orderId, 
+                            amount: total,
+                            transactionId: orderId 
+                        })
+                    });
+                    if (!upiResponse.ok) throw new Error('UPI verification failed');
+                    console.log('UPI verification successful');
+                    
+                    // Redirect to UPI app
+                    const amount = total * 100; // Convert to paise
+                    const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=Patel%20Shop&am=${Math.floor(amount / 100)}&tn=Order%20${orderId}&tr=${orderId}`;
+                    alert("🎉 Order Placed!\nRedirecting to your UPI app...");
+                    window.location.href = upiLink;
+                    return;
+                } catch (e) {
+                    console.warn('UPI verification error:', e);
+                }
+            } else if (payment.value === 'Card') {
+                try {
+                    const cardResponse = await fetch('http://localhost:3000/api/checkout/verify-card', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ 
+                            cardNumber: paymentDetails.cardNumber,
+                            cardName: paymentDetails.cardName,
+                            orderId, 
+                            amount: total 
+                        })
+                    });
+                    if (!cardResponse.ok) throw new Error('Card verification failed');
+                    console.log('Card verification successful');
+                } catch (e) {
+                    console.warn('Card verification error:', e);
+                }
+            }
+
+            alert("🎉 Order Placed Successfully!\nOrder ID: " + orderId);
+            // redirect to orders page to view saved orders
+            window.location.href = 'Order.html';
+            return;
+        } catch (err) {
+            console.error('Failed to save order:', err.message);
+            alert('Could not place order:\n' + err.message);
+            return;
+        }
+    }
+
+    function togglePaymentMethod() {
+        const upiRadio = document.querySelector('input[name="payment"][value="UPI"]');
+        const cardRadio = document.querySelector('input[name="payment"][value="Card"]');
+        const codRadio = document.querySelector('input[name="payment"][value="COD"]');
+        const upiSection = document.getElementById('upiSection');
+        const cardSection = document.getElementById('cardSection');
+        const placeBtn = document.querySelector('.place-order');
+
+        if (upiRadio && upiRadio.checked) {
+            upiSection.classList.add('active');
+            cardSection.classList.remove('active');
+            if (placeBtn) placeBtn.style.display = 'none';
+        } else if (cardRadio && cardRadio.checked) {
+            cardSection.classList.add('active');
+            upiSection.classList.remove('active');
+            if (placeBtn) placeBtn.style.display = 'none';
+        } else if (codRadio && codRadio.checked) {
+            upiSection.classList.remove('active');
+            cardSection.classList.remove('active');
+            if (placeBtn) placeBtn.style.display = 'block';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => await renderSummary());
+</script>
+
+</body>
+</html>

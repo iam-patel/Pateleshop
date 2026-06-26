@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign Up</title>
+  <style>
+    :root{--bg:url('https://images.pexels.com/photos/247431/pexels-photo-247431.jpeg');}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:"Segoe UI", Inter, Arial, sans-serif;
+      background-image:var(--bg);
+      background-size:cover;
+      background-position:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      color:#111;
+    }
+    .overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));}
+    .sunflare{ position:absolute; left:6%; top:3%; width:420px; height:420px; background: radial-gradient(closest-side, rgba(255,246,200,0.20), rgba(255,246,200,0.08), transparent 42%); filter: blur(42px); pointer-events:none; z-index:1; }
+    .container{
+      position:relative;
+      z-index:2;
+      width:100%;
+      max-width:300px;
+      background:linear-gradient(180deg, #ffffff2a, rgba(255,255,255,0.06));
+      padding:28px;
+      border-radius:18px;
+      box-shadow:0 18px 48px rgba(0,0,0,0.18), 0 3px 24px rgba(46,204,113,0.04) inset;
+      border:1px solid rgba(255, 255, 255, 0.082);
+      backdrop-filter: blur(03px);
+      -webkit-backdrop-filter: blur(10px);
+      color:#0c2630;
+    }
+    h1{ text-align:center; margin:0 0 16px; font-size:24px; color:#07202a; }
+    .form-group{ margin-bottom:14px; }
+
+    /* Match spacing behavior seen on Login.html */
+    .form-group:last-child{ margin-bottom:0; }
+    #signup-form .btn,
+    #shopkeeper-form .btn{ margin-top:6px; }
+    .slider-actions{ display:flex; justify-content:space-between; margin-top:16px; gap:8px; }
+    .footer{ font-size:13px; color:rgba(255, 255, 255, 0.815); text-align:center; margin-top:14px }
+
+    label{ display:block; font-size:13px; margin-bottom:6px; color:rgba(7,32,42,0.85); }
+    input[type="tel"], input[type="text"], input[type="password"]{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid rgba(7,32,42,0.08);
+      background:rgba(255,255,255,0.94);
+      color:#07202a;
+      font-size:15px;
+      box-sizing:border-box;
+      outline:none;
+      transition:box-shadow 120ms ease, transform 120ms ease;
+    }
+    input:focus{ box-shadow:0 12px 30px rgba(7,32,42,0.06) inset; transform:translateY(-1px); }
+    input::placeholder{ color:rgba(7,32,42,0.45); }
+    .row{ display:flex; gap:8px; }
+    .btn{
+      display:inline-block;
+      padding:12px 16px;
+      border-radius:12px;
+      background:linear-gradient(135deg,#c8f79b,#57d17f);
+      color:#043f28;
+      border:none;
+      cursor:pointer;
+      font-weight:700;
+      font-size:15px;
+      box-shadow:0 12px 30px rgba(87,209,127,0.18);
+      transition:transform 90ms ease, opacity 140ms ease, box-shadow 120ms ease;
+    }
+    .btn:hover{ box-shadow:0 18px 42px rgba(87,209,127,0.14); }
+    .btn:active{ transform:translateY(1px) scale(0.997); }
+    .btn[disabled]{ opacity:0.6; cursor:not-allowed; }
+    .btn.secondary{
+      background:linear-gradient(135deg,#c8f79b,#57d17f);
+      color:#050c0fcc;
+      border:1px solid rgba(7,32,42,0.06);
+      box-shadow:none;
+    }
+    .small{ font-size:13px; color:rgba(7,32,42,0.8); text-align:center; margin-top:10px; }
+    .hide{ display:none; }
+    .success{ color:#1b6b2d; font-weight:700; }
+    .error{ color:#9b1c1c; background:rgba(255,230,230,0.9); font-size:13px; padding:8px; border-radius:6px; }
+    .footer{ font-size:13px; color:rgba(255, 255, 255, 0.815); text-align:center; margin-top:14px }
+    a{ color:#0aa36a; text-decoration:underline; }
+    .pane{ visibility: hidden; opacity: 0; }
+    .pane.active{ visibility: visible; opacity: 1; }
+    @media (max-width:420px){ .container{ margin:18px; padding:22px; } }
+  </style>
+</head>
+<body>
+  <div class="overlay" aria-hidden="true"></div>
+  <div class="sunflare" aria-hidden="true"></div>
+  <div class="container" role="main" aria-labelledby="signup-title">
+    <h1 id="signup-title">Create Account</h1>
+
+    <div class="slider" id="signup-slider">
+      <div class="slider-track" id="signup-track">
+        <div class="pane pane-customer active" id="pane-customer">
+          <form id="signup-form" onsubmit="return false" novalidate>
+
+      <!-- ✅ NEW: Name field -->
+      <div class="form-group">
+        <strong><label for="name">Full Name</label></strong>
+        <input id="name" name="name" type="text" placeholder="e.g. Rahul Patel" required>
+        <div id="name-error" class="error hide"></div>
+      </div>
+
+      <div class="form-group">
+        <strong><label for="mobile">Mobile Number</label></strong>
+        <input id="mobile" name="mobile" type="tel" inputmode="numeric" pattern="[0-9]{10}" placeholder="e.g., 9876543210" required>
+        <div id="mobile-error" class="error hide"></div>
+      </div>
+
+      <div class="form-group row">
+        <div style="flex:1">
+          <strong><label for="otp">OTP</label></strong>
+          <input id="otp" name="otp" type="text" inputmode="numeric" placeholder="Enter OTP" class="hide">
+          <div id="otp-error" class="error hide"></div>
+        </div>
+        <div style="width:130px;display:flex;align-items:end;">
+          <button type="button" id="send-otp" class="btn">Send OTP</button>
+        </div>
+      </div>
+
+
+      <div class="form-group">
+        <strong><label for="password">New password</label></strong>
+        <input id="password" name="password" type="password" placeholder="Create a password" required>
+        <div id="password-error" class="error hide"></div>
+      </div>
+
+      <div class="form-group">
+        <button type="button" id="verify-btn" class="btn secondary hide">Verify OTP</button>
+        <button type="submit" id="submit-btn" class="btn" disabled>Sign up</button>
+      </div>
+
+      <div class="small">
+        <span id="message" aria-live="polite"></span>
+      </div>
+          </form>
+        </div>
+
+        <div class="pane pane-shopkeeper" id="pane-shopkeeper">
+          <form id="shopkeeper-form" onsubmit="return false" novalidate>
+            <div class="form-group">
+              <strong><label for="shopName">Shop Keeper Name </label></strong>
+              <input id="shopkeeperName" name="shopkepeername" type="text" placeholder="e.g. Patel Rahul" required>
+              <div id="shopkeeperName-error" class="error hide"></div>
+            </div>
+            <div class="form-group">
+              <strong><label for="shopName">Shop Name</label></strong>
+              <input id="shopName" name="shopName" type="text" placeholder="e.g. Patel General Store" required>
+              <div id="shopName-error" class="error hide"></div>
+            </div>
+            <div class="form-group">
+              <strong><label for="shopMobile">Mobile Number</label></strong>
+              <input id="shopMobile" name="shopMobile" type="tel" inputmode="numeric" pattern="[0-9]{10}" placeholder="Shop contact number" required>
+              <div id="shopMobile-error" class="error hide"></div>
+            </div>
+            <div class="form-group row">
+              <div style="flex:1">
+                <strong><label for="shopOtp">OTP</label></strong>
+                <input id="shopOtp" name="shopOtp" type="text" inputmode="numeric" placeholder="Enter OTP" class="hide">
+                <div id="shopOtp-error" class="error hide"></div>
+              </div>
+              <div style="width:130px;display:flex;align-items:end;">
+                <button type="button" id="shop-send-otp" class="btn">Send OTP</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <strong><label for="shopPassword">Password</label></strong>
+              <input id="shopPassword" name="shopPassword" type="password" placeholder="Create a password" required>
+              <div id="shopPassword-error" class="error hide"></div>
+            </div>
+            <div class="form-group">
+              <button type="button" id="shop-verify-btn" class="btn secondary hide">Verify OTP</button>
+              <button type="submit" id="shop-submit" class="btn">Register Shopkeeper</button>
+            </div>
+            <div class="small">
+              <span id="shop-message" aria-live="polite"></span>
+            </div>
+            <div class="small" style="margin-top:8px;">Already have shop account? <a href="Login.html">Login</a></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="slider-actions">
+        <button id="to-customer" class="btn secondary" type="button">Customer</button>
+        <button id="to-shopkeeper" class="btn" type="button">Shopkeeper</button>
+      </div>
+
+    </div>
+
+    <strong><div class="footer">Already have an account?</strong><i><a href="Login.html">Log in</a></div></i>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:3000/api/auth";
+    const nameInput     = document.getElementById('name');
+    const mobileInput   = document.getElementById('mobile');
+    const sendBtn       = document.getElementById('send-otp');
+    const otpInput      = document.getElementById('otp');
+    const verifyBtn     = document.getElementById('verify-btn');
+    const submitBtn     = document.getElementById('submit-btn');
+    const message       = document.getElementById('message');
+    const nameError     = document.getElementById('name-error');
+    const mobileError   = document.getElementById('mobile-error');
+    const otpError      = document.getElementById('otp-error');
+    const passwordInput = document.getElementById('password');
+    const passwordError = document.getElementById('password-error');
+    
+
+    function validateName() {
+      const v = nameInput.value.trim();
+      const ok = v.length >= 2;
+      if (!ok) { nameError.textContent = 'Please enter your full name'; nameError.classList.remove('hide'); }
+      else { nameError.classList.add('hide'); }
+      return ok;
+    }
+
+    function validateMobile() {
+      const v = mobileInput.value.trim();
+      const ok = /^[0-9]{10}$/.test(v);
+      if (!ok) { mobileError.textContent = 'Enter a valid 10-digit mobile number'; mobileError.classList.remove('hide'); }
+      else { mobileError.classList.add('hide'); }
+      return ok;
+    }
+
+    sendBtn.addEventListener('click', async () => {
+      if (!validateName())   return;  
+      if (!validateMobile()) return;
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending…';
+
+      const res = await fetch(`${API_URL}/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile: mobileInput.value })
+      });
+      const data = await res.json();
+      message.textContent = data.message;
+
+      otpInput.classList.remove('hide');
+      verifyBtn.classList.remove('hide');
+      sendBtn.textContent = 'Resend OTP';
+      sendBtn.disabled = false;
+    });
+
+    verifyBtn.addEventListener('click', async () => {
+      const v = otpInput.value.trim();
+      if (v === '') {
+        otpError.textContent = 'Enter the OTP';
+        otpError.classList.remove('hide');
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mobile: mobileInput.value,
+          otp: otpInput.value,
+          password: passwordInput.value
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        message.innerHTML = '<span class="success">OTP verified ✔</span>';
+        submitBtn.disabled = false;
+        verifyBtn.classList.add('hide');
+        otpInput.disabled = true;
+        mobileInput.disabled = true;
+      } else {
+        otpError.textContent = 'Incorrect OTP';
+        otpError.classList.remove('hide');
+      }
+    });
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (passwordInput.value.length < 6) {
+        passwordError.textContent = 'Password must be at least 6 characters';
+        passwordError.classList.remove('hide');
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mobile: mobileInput.value,
+          name: nameInput.value.trim(),
+          password: passwordInput.value
+        })
+      });
+      const data = await res.json();
+      message.innerHTML = '<span class="success">' + data.message + '</span>';
+
+      setTimeout(() => { window.location.href = 'Login.html'; }, 1500);
+    });
+
+    // --- Shopkeeper OTP and registration ---
+    (function(){
+      const shopkeeperNameInput = document.getElementById('shopkeeperName');
+      const shopNameInput = document.getElementById('shopName');
+      const shopMobileInput = document.getElementById('shopMobile');
+      const shopOtpInput = document.getElementById('shopOtp');
+      const shopPasswordInput = document.getElementById('shopPassword');
+      const shopSendOtpBtn = document.getElementById('shop-send-otp');
+      const shopVerifyBtn = document.getElementById('shop-verify-btn');
+      const shopSubmitBtn = document.getElementById('shop-submit');
+      const shopMessage = document.getElementById('shop-message');
+      const shopNameError = document.getElementById('shopName-error');
+      const shopMobileError = document.getElementById('shopMobile-error');
+      const shopOtpError = document.getElementById('shopOtp-error');
+      const shopPasswordError = document.getElementById('shopPassword-error');
+
+       function validateShopName() {
+        const v = shopkeeperNameInput.value.trim();
+        const ok = v.length >= 2;
+        if (!ok) { shopNameError.textContent = 'Please enter shop keeper name'; shopNameError.classList.remove('hide'); }
+        else { shopkeeperNameError.classList.add('hide'); }
+        return ok;
+       }
+
+      function validateShopName() {
+        const v = shopNameInput.value.trim();
+        const ok = v.length >= 2;
+        if (!ok) { shopNameError.textContent = 'Please enter shop name'; shopNameError.classList.remove('hide'); }
+        else { shopNameError.classList.add('hide'); }
+        return ok;
+      }
+
+      function validateShopMobile() {
+        const v = shopMobileInput.value.trim();
+        const ok = /^[0-9]{10}$/.test(v);
+        if (!ok) { shopMobileError.textContent = 'Enter a valid 10-digit mobile number'; shopMobileError.classList.remove('hide'); }
+        else { shopMobileError.classList.add('hide'); }
+        return ok;
+      }
+
+      shopSendOtpBtn.addEventListener('click', async () => {
+        if (!validateShopName()) return;
+        if (!validateShopMobile()) return;
+
+        shopSendOtpBtn.disabled = true;
+        shopSendOtpBtn.textContent = 'Sending…';
+
+        const res = await fetch(`${API_URL}/send-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile: shopMobileInput.value })
+        });
+        const data = await res.json();
+        shopMessage.textContent = data.message;
+
+        shopOtpInput.classList.remove('hide');
+        shopVerifyBtn.classList.remove('hide');
+        shopSendOtpBtn.textContent = 'Resend OTP';
+        shopSendOtpBtn.disabled = false;
+      });
+
+      shopVerifyBtn.addEventListener('click', async () => {
+        const v = shopOtpInput.value.trim();
+        if (v === '') {
+          shopOtpError.textContent = 'Enter the OTP';
+          shopOtpError.classList.remove('hide');
+          return;
+        }
+
+        const res = await fetch(`${API_URL}/verify-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mobile: shopMobileInput.value,
+            otp: shopOtpInput.value,
+            password: shopPasswordInput.value
+          })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          shopMessage.innerHTML = '<span class="success">OTP verified ✔</span>';
+          shopSubmitBtn.disabled = false;
+          shopVerifyBtn.classList.add('hide');
+          shopOtpInput.disabled = true;
+          shopMobileInput.disabled = true;
+        } else {
+          shopOtpError.textContent = 'Incorrect OTP';
+          shopOtpError.classList.remove('hide');
+        }
+      });
+
+      document.getElementById('shopkeeper-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (shopPasswordInput.value.length < 6) {
+          shopPasswordError.textContent = 'Password must be at least 6 characters';
+          shopPasswordError.classList.remove('hide');
+          return;
+        }
+
+        const res = await fetch(`${API_URL}/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mobile: shopMobileInput.value,
+            name: shopNameInput.value.trim(),
+            password: shopPasswordInput.value,
+            role: 'shopkeeper'
+          })
+        });
+        const data = await res.json();
+        shopMessage.innerHTML = '<span class="success">' + data.message + '</span>';
+
+        setTimeout(() => { window.location.href = 'Login.html'; }, 1500);
+      });
+    })();
+
+    // --- Slider behavior (customer <-> shopkeeper) ---
+    (function(){
+      const track = document.getElementById('signup-track');
+      const toCustomer = document.getElementById('to-customer');
+      const toShop = document.getElementById('to-shopkeeper');
+      const panes = document.querySelectorAll('.pane');
+      let active = 0; // 0 customer, 1 shopkeeper
+      function show(index){
+        active = index;
+        track.style.transform = `translateX(${ -index * 2 }%)`;
+        panes.forEach((p, i) => {
+          if (i === index) p.classList.add('active');
+          else p.classList.remove('active');
+        });
+      }
+      toCustomer.addEventListener('click', ()=> show(0));
+      toShop.addEventListener('click', ()=> show(1));
+
+      // basic swipe support
+      let startX = 0, dx = 0;
+      track.addEventListener('pointerdown', (ev)=>{ startX = ev.clientX; track.setPointerCapture(ev.pointerId); });
+      track.addEventListener('pointermove', (ev)=>{ if(!startX) return; dx = ev.clientX - startX; track.style.transition = 'none'; track.style.transform = `translateX(${ -active*100 + (dx / track.clientWidth) * 100 }%)`; });
+      track.addEventListener('pointerup', (ev)=>{ track.style.transition = ''; if (Math.abs(dx) > 60) { if (dx < 0) show(Math.min(1, active+1)); else show(Math.max(0, active-1)); } else show(active); startX = 0; dx = 0; });
+      // initialize
+      track.style.transition = 'transform 260ms ease';
+      show(0);
+    })();
+  </script>
+</body>
+</html>

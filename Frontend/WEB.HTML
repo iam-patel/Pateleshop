@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patel e shop</title>
+<!-- Import Inter font from Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    /* Use Inter as the primary UI font, fall back to Poppins and system fonts */
+    body {font-family: 'Inter', Poppins, Arial, sans-serif; background: #f5f7fa; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility}
+
+    /* Headings: use stronger weights for better hierarchy */
+    h1,h2,h3 {font-family: 'Inter', Poppins, Arial, sans-serif; font-weight:700}
+    h4,h5,h6 {font-family: 'Inter', Poppins, Arial, sans-serif; font-weight:600}
+
+    /* NAVBAR */
+    nav {
+        background: rgba(250, 246, 246, 0.87);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 3px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        height: 80px;
+        
+    }
+    .logo-area {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 10px;
+    
+    }
+
+    .logo-area img {
+    margin-left: 10px;
+    margin-bottom: 5px;
+    width: 300px;
+    height: 65px;
+    border-radius: 10px;
+    filter: brightness(1) contrast(1.2) saturate(1.5);
+    }
+
+    nav ul {display: flex; gap: 25px; list-style: none;}
+    nav ul li {font-size: 18px; cursor: pointer; color: #000000;}
+    nav ul li:hover {color: #1605aaef;}
+    
+    /*Contanter Section*/
+     .Container img{
+        width: 100px;
+        height: 50px;
+        border-radius: 10px;
+        gap: 5px;
+        display:flex;
+        justify-content: center;
+        filter: brightness(1) contrast(1) saturate(1);
+        transition: 0.3s ease;}
+
+     .Container img:hover {
+        filter: brightness(1);
+        box-shadow: 0 0 10px rgba(4, 29, 255, 0.897);
+}
+
+    /* Avatar / profile drawer (full height, drawer on right) */
+    .avatar-dropdown { position: relative; }
+    .avatar { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: #0b6cff; color: #fff; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* Drawer style: full viewport height, fixed to right, like cart drawer */
+    .avatar-menu { position: fixed; top: 0; right: 0; height: 100vh; width: 320px; max-width: 90vw; background: #fff; border-left: 1px solid rgba(0,0,0,0.06); box-shadow: -12px 0 40px rgba(0,0,0,0.12); display: flex; flex-direction: column; transform: translateX(110%); transition: transform 260ms ease; z-index: 1200; }
+    .avatar-menu.open { transform: translateX(0); }
+    .avatar-menu .profile-header { display:flex; align-items:center; gap:12px; padding:20px; border-bottom:1px solid #f0f0f3; }
+    .avatar-menu .profile-header .photo { width:72px; height:72px; border-radius:50%; overflow:hidden; background:#e6eefc; display:flex; align-items:center; justify-content:center; font-size:28px; color:#0b6cff; }
+    .avatar-menu .profile-header .user-info { display:flex; flex-direction:column; }
+    .avatar-menu .profile-header .user-info .name { font-weight:700; font-size:16px; color:#111 }
+    .avatar-menu .profile-header .user-info .email { font-size:13px; color:#666; margin-top:4px }
+    .avatar-menu .menu-body { padding: 12px 16px; overflow:auto; flex:1; }
+    .avatar-menu .menu-body button, .avatar-menu .menu-body a { width:100%; text-align:left; padding:12px 10px; border-radius:8px; border:none; background:transparent; display:flex; gap:12px; align-items:center; color:#111; font-size:15px; cursor:pointer; text-decoration:none }
+    .avatar-menu .menu-body button:hover, .avatar-menu .menu-body a:hover { background:#f6f8ff }
+    .avatar-menu .profile-actions { padding:12px 16px; border-top:1px solid #f0f0f3 }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .logo-area { margin-bottom: 0; }
+    .content { display: block; width: 100%;  }
+    .page { display: none; }
+    
+    /* HERO SECTION */
+    .hero {
+        height: 350px;
+        background: linear-gradient(to right, #01090c, #3f7586, #b5bec7);
+        color: rgb(12, 12, 12);
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        padding: 30px;
+    }
+    .hero h1 {
+        font-size: 60px;
+        margin-bottom: 15px;
+        font-weight: 700;
+    }
+    .hero p {
+        font-size: 20px;
+        opacity: 0.9;
+    }
+    .shop-btn {
+        margin-top: 25px;
+        padding: 10px 150px;
+        font-size: 20px;
+        border: none;
+        background: #e67e22;
+        color: rgb(255, 255, 255);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .shop-btn:hover {background: #cf6f1d;}
+
+   
+
+    /* FOOTER / PRIVACY POLICY */
+    .site-footer {
+        background: #fff;
+        border-top: 1px solid #e6e9ee;
+        padding: 36px 40px;
+        color: #333;
+        font-size: 14px;
+        line-height: 1.55;
+    }
+    .site-footer .container { max-width: 11000px; margin: 0 auto; }
+    .site-footer h3 { margin-bottom: 8px; font-size: 18px; color:#222 }
+    .site-footer p { margin-bottom: 10px; color: #444 }
+    .site-footer small { color: #666; display:block; margin-top:8px }
+    .site-footer .cols { display:flex; gap:30px; flex-wrap:wrap; margin-top:14px }
+    .site-footer .cols > div { flex:1 1 320px }
+    @media (max-width:600px) { .site-footer { padding:20px } .site-footer .cols { flex-direction:column } }
+
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <div class="logo-area">
+        <img src="Logo.png" alt="My Store Logo">
+    </div>
+    <div class="nav-right">
+        <div class="avatar-dropdown">
+            <div id="user-avatar" class="avatar" aria-haspopup="true" aria-expanded="false" onclick="toggleUserMenu()"><span id="avatar-initial">R</span></div>
+            <div id="avatar-menu" class="avatar-menu" role="menu" aria-labelledby="user-avatar">
+                <div class="profile-header">
+                    <div class="photo" id="profile-photo">R</div>
+                    <div class="user-info">
+                        <div class="name" id="profile-name">Rahul Patel</div>
+                        <div class="email" id="profile-email">rp3313113@gmail.com</div>
+                        <div class="address" id="profile-address" style="margin-top:8px;font-size:13px;color:#555;">Address not set</div>
+                    </div>
+                </div>
+                <div class="menu-body">
+                    <label style="display:block; margin-bottom:8px; font-size:13px; color:#000000">Update profile photo</label>
+                    <input id="photo-input" type="file" accept="image/*" style="width:100%; padding:6px;" />
+                    <div style="height:12px"></div>
+                    <label style="display:block; margin-bottom:6px; font-size:13px; color:#000000">Address</label>
+                    <input id="address-input" type="text" placeholder="Enter address" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(0,0,0,0.12);margin-bottom:10px;" />
+                    <button id="save-address" type="button" style="width:100%;padding:10px;border:none;border-radius:10px;background:#0b84ff;color:#fff;font-weight:700;cursor:pointer;margin-bottom:12px;">Save address</button>
+                    <button id="loc-current-btn" type="button" style="width:100%;padding:10px;border:none;border-radius:10px;background:#2d9cdb;color:#fff;font-weight:700;cursor:pointer;margin-bottom:12px;">Use current location</button>
+                    <button id="add-address-btn" type="button" style="display:none;width:100%;padding:10px;border:none;border-radius:10px;background:#10b981;color:#fff;font-weight:700;cursor:pointer;margin-bottom:12px;">Add address</button>
+                    <div style="height:12px"></div>
+                    <a href="Order.html">My Orders</a>
+                    <button type="button" onclick="showPage('about')">About Us</button>
+                    <button type="button" onclick="showPage('contact')">Contact Us</button>
+                    <a href="signup.html">Sign Up</a>
+                </div>
+                <div class="profile-actions">
+                    <button id="logout-btn" style="background:#ff4757;color:#fff;padding:10px;border-radius:8px;border:none;width:100%;">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="content">
+
+        <div id="about" class="page">
+ 
+            <h3>This Store Owner Is Patel Rahul.</h3>
+        </div>
+
+        <div id="contact" class="page">
+            <h3>Email: rp3313113@gmail.com</h3>
+            <h3>Phone: +916207106584</h3>
+        </div>
+    </div>
+
+
+
+<!-- HERO -->
+<div class="page-wrap">
+<div class="hero">
+    <h1>Premium Products Just for You</h1>
+    <p>Discover the best deals on fashion, gadgets, and more.</p>
+    <a href="Products.html"><button class="shop-btn">Shop Now</button></a>
+</div>
+
+</div>
+
+<!-- FOOTER / PRIVACY POLICY -->
+<footer class="site-footer" aria-labelledby="privacy-heading">
+    <div class="container">
+        <h3 id="privacy-heading">Privacy Policy</h3>
+        <p>Effective date: December 3, 2025</p>
+        <div class="cols">
+            <div>
+                <h4>Introduction</h4>
+                <p>This Privacy Policy explains how <strong>patel e shop</strong> ("we", "our", "us") collects, uses, discloses and protects the personal information you provide when using our website and services. We are committed to protecting your privacy and handling your data transparently and securely.</p>
+
+                <h4>Information we collect</h4>
+                <p>We collect information you provide directly (for example, when you create an account, place an order, contact support), including name, email, shipping address, billing address, phone number and payment information. We also collect technical and usage data (IP address, browser, device, pages visited) and may use cookies and similar technologies to improve your experience.</p>
+            </div>
+
+            <div>
+                <h4>How we use information</h4>
+                <p>We use your information to process and fulfill orders, communicate about purchases and account activity, provide customer support, personalize your experience, prevent fraud, comply with legal obligations and for analytics and marketing (where permitted).</p>
+
+                <h4>Sharing & third parties</h4>
+                <p>We may share your information with payment processors, shipping providers, analytics services, advertising partners and service providers who perform services on our behalf. We require partners to protect personal information and limit use to the services they provide. We will not sell your personal data.</p>
+            </div>
+
+            <div>
+                <h4>Cookies & tracking</h4>
+                <p>We use cookies and similar technologies to remember your preferences, enable essential site features, analyze site usage and deliver relevant advertising. You can control cookies through your browser settings and opt-out mechanisms provided by advertising partners.</p>
+
+                <h4>Security & retention</h4>
+                <p>We implement administrative, technical and physical safeguards to protect your information. While we strive to protect data, no method of transmission or storage is 100% secure. We retain data only as long as needed for business purposes and legal compliance.</p>
+            </div>
+        </div>
+
+        <div style="margin-top:18px;">
+            <h4>Your rights & choices</h4>
+            <p>You can access, correct, or delete your account information by contacting us. You may opt out of promotional emails by following the unsubscribe link in those messages. For cookies and tracking opt-outs, use your browser controls or opt-out links provided by advertising networks.</p>
+
+            <h4>Children</h4>
+            <p>Our services are not directed to children under 16. We do not knowingly collect personal data from children under 16. If you believe we have collected such information, please contact us to request deletion.</p>
+
+            <h4>Changes to this policy</h4>
+            <p>We may update this Privacy Policy; we will post any changes on this page with an updated effective date. Continued use of our services after changes means you accept the updated policy.</p>
+
+            <h4>Contact us</h4>
+            <p>If you have questions or requests about your personal data, please contact: <strong>rp3313113@gmail.com</strong> or mail: Patel E Shop, [Postal Address].</p>
+
+            <small>By using our website and services you consent to the collection and use of information as described in this Privacy Policy.</small>
+        </div>
+    </div>
+</footer>
+
+
+<script>
+
+
+    function showPage(pageId) {
+    let pages = document.querySelectorAll('.page');
+    pages.forEach(page => page.style.display = 'none');
+
+    document.getElementById(pageId).style.display = 'block';
+}
+
+// No default page; About/Contact show only after tap
+
+    (function(){
+        // Highlight active header/nav links when present
+        const links = document.querySelectorAll('nav a');
+        links.forEach(a=>{
+            try{
+                const href = a.getAttribute('href') || '';
+                if(href && (location.pathname.endsWith(href) || (href === 'WEB.HTML' && location.pathname.endsWith('WEB.HTML')))){
+                    a.classList.add('active');
+                    a.setAttribute('aria-current','page');
+                }
+            }catch(e){}
+        });
+
+       
+    })();
+
+    function toggleUserMenu() {
+        const menu = document.getElementById('avatar-menu');
+        const avatar = document.getElementById('user-avatar');
+        const open = menu.classList.toggle('open');
+        avatar.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    document.addEventListener('click', (event) => {
+        const menu = document.getElementById('avatar-menu');
+        const avatar = document.getElementById('user-avatar');
+        if (!menu.contains(event.target) && !avatar.contains(event.target)) {
+            menu.classList.remove('open');
+            avatar.setAttribute('aria-expanded', 'false');
+        }
+    });
+</script>
+
+<script>
+
+   const chatWidget = `
+ <div id="chat-btn" onclick="toggleChat()" style="
+  position: fixed; bottom: 24px; right: 24px;
+  width: 60px; height: 60px; border-radius: 50%;
+  background: #25D366; color: white;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-size: 28px; z-index: 9999;">
+  💬
+ </div>
+
+ <div id="chat-box" style="
+  display: none; position: fixed; bottom: 100px; right: 24px;
+  width: 320px; height: 450px; background: white;
+  border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  flex-direction: column; z-index: 9999; overflow: hidden;">
+
+  <!-- Header -->
+  <div style="background: #25D366; padding: 16px; color: white;">
+    <b>🤖 Patel Shop Assistant</b>
+    <p style="margin:4px 0 0; font-size:12px;">Online</p>
+  </div>
+
+  <!-- Messages -->
+  <div id="chat-messages" style="
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    height: 310px;">
+    <div class="bot-msg">👋 Hi! I'm your Patel Shop assistant. How can I help you today?</div>
+  </div>
+
+  <!-- Input -->
+  <div style="padding: 12px; border-top: 1px solid #eee; display: flex; gap: 8px;">
+    <input id="chat-input" type="text" placeholder="Type a message..."
+      onkeypress="if(event.key==='Enter') sendMessage()"
+      style="flex:1; padding: 8px 12px; border-radius: 20px;
+      border: 1px solid #ddd; outline: none; font-size: 14px;" />
+    <button onclick="sendMessage()" style="
+      background: #25D366; color: white; border: none;
+      border-radius: 50%; width: 36px; height: 36px;
+      cursor: pointer; font-size: 18px;">➤</button>
+  </div>
+ </div>
+
+<style>
+  .bot-msg {
+    background: #f0f0f0; padding: 10px 14px;
+    border-radius: 16px 16px 16px 4px;
+    font-size: 14px; max-width: 80%; align-self: flex-start;
+  }
+  .user-msg {
+    background: #25D366; color: white;
+    padding: 10px 14px;
+    border-radius: 16px 16px 4px 16px;
+    font-size: 14px; max-width: 80%; align-self: flex-end;
+  }
+  .typing-msg {
+    background: #f0f0f0; padding: 10px 14px;
+    border-radius: 16px 16px 16px 4px;
+    font-size: 14px; max-width: 80%; align-self: flex-start;
+  }
+</style>
+`;
+
+// Inject widget into page
+document.body.insertAdjacentHTML('beforeend', chatWidget);
+
+function toggleChat() {
+  const box = document.getElementById('chat-box');
+  box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const messages = document.getElementById('chat-messages');
+  const message = input.value.trim();
+  if (!message) return;
+
+  // Show user message
+  messages.innerHTML += `<div class="user-msg">${message}</div>`;
+  input.value = '';
+
+  // Show typing indicator
+  messages.innerHTML += `<div class="typing-msg" id="typing">⏳ Typing...</div>`;
+  messages.scrollTop = messages.scrollHeight;
+
+  try {
+    const res = await fetch('http://localhost:3000/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+    const data = await res.json();
+
+    // Remove typing indicator and show reply
+    document.getElementById('typing').remove();
+    messages.innerHTML += `<div class="bot-msg">${data.reply}</div>`;
+  } catch (err) {
+    document.getElementById('typing').remove();
+    messages.innerHTML += `<div class="bot-msg">Sorry, something went wrong. Please try again!</div>`;
+  }
+
+  messages.scrollTop = messages.scrollHeight;
+}
+
+</script>
+
+<script>
+    (function(){
+        const avatar = document.getElementById('user-avatar');
+        const avatarInitial = document.getElementById('avatar-initial');
+        const profilePhoto = document.getElementById('profile-photo');
+        const profileName = document.getElementById('profile-name');
+        const profileEmail = document.getElementById('profile-email');
+        const profileAddressLabel = document.getElementById('profile-address');
+        const input = document.getElementById('photo-input');
+        const addressInput = document.getElementById('address-input');
+        const saveAddressButton = document.getElementById('save-address');
+        const addAddressButton = document.getElementById('add-address-btn');
+        const locCurrentButton = document.getElementById('loc-current-btn');
+
+        function getAuthToken(){
+            return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        }
+
+        async function loadProfile(){
+            const token = getAuthToken();
+            if(!token) return;
+            try{
+                const res = await fetch('http://localhost:3000/api/profile', { headers: { 'Authorization': 'Bearer ' + token }});
+                if(!res.ok) return;
+                const user = await res.json();
+                profileName.textContent = user.name || 'User';
+                profileEmail.textContent = user.email || '';
+                if(user.photo){
+                    avatarInitial.style.display = 'none';
+                    avatar.innerHTML = `<img src="${user.photo}" alt="avatar">`;
+                    profilePhoto.innerHTML = `<img src="${user.photo}" alt="profile" style="width:100%; height:100%; object-fit:cover">`;
+                } else {
+                    const initial = (user.name || 'U').charAt(0).toUpperCase();
+                    avatarInitial.textContent = initial;
+                    profilePhoto.textContent = initial;
+                }
+                if(profileAddressLabel){
+                    profileAddressLabel.textContent = user.address || 'Address not set';
+                }
+                if(addressInput){
+                  addressInput.value = user.address || '';
+                }
+                // Show/hide address input and Add button based on whether address exists
+                if (user.address && user.address.trim().length > 0) {
+                  if (addressInput) addressInput.style.display = 'none';
+                  if (saveAddressButton) saveAddressButton.style.display = 'none';
+                  if (addAddressButton) addAddressButton.style.display = 'block';
+                } else {
+                  if (addressInput) addressInput.style.display = 'block';
+                  if (saveAddressButton) saveAddressButton.style.display = 'block';
+                  if (addAddressButton) addAddressButton.style.display = 'none';
+                }
+            }catch(e){ console.error('profile load', e); }
+        }
+
+        input.addEventListener('change', async (e) => {
+            const file = e.target.files[0]; if(!file) return;
+            const token = getAuthToken();
+            if(!token){ alert('Please login to update profile'); return; }
+            const fd = new FormData(); fd.append('photo', file);
+            try{
+                const res = await fetch('http://localhost:3000/api/profile', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd });
+                if(!res.ok){
+                    const err = await res.json().catch(()=>({message:'Upload failed'}));
+                    console.error('profile upload failed', err);
+                    return alert(err.message || 'Upload failed');
+                }
+                const user = await res.json();
+                if(user.photo){
+                    avatarInitial.style.display = 'none';
+                    avatar.innerHTML = `<img src="${user.photo}" alt="avatar">`;
+                    profilePhoto.innerHTML = `<img src="${user.photo}" alt="profile" style="width:100%; height:100%; object-fit:cover">`;
+                }
+                if(profileAddressLabel){
+                    profileAddressLabel.textContent = user.address || 'Address not set';
+                }
+                if(addressInput){
+                    addressInput.value = user.address || '';
+                }
+            }catch(err){
+                console.error('upload error', err);
+                alert('Upload failed: ' + (err.message || 'Unknown error'));
+            }
+        });
+        if (saveAddressButton) {
+            saveAddressButton.addEventListener('click', async () => {
+                const token = getAuthToken();
+                if(!token){ alert('Please login to update profile'); return; }
+                const address = addressInput.value.trim();
+                if (!address) { return alert('Please enter an address'); }
+                try {
+                    const fd = new FormData();
+                    fd.append('address', address);
+                    const res = await fetch('http://localhost:3000/api/profile', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token },
+                        body: fd
+                    });
+                    if(!res.ok) {
+                        const err = await res.json().catch(()=>({message:'Update failed'}));
+                        return alert(err.message || 'Address update failed');
+                    }
+                    const user = await res.json();
+                    if(profileAddressLabel) profileAddressLabel.textContent = user.address || 'Address not set';
+                      // hide the input after successful save and show 'Add address' button
+                      if (addressInput) addressInput.style.display = 'none';
+                      if (saveAddressButton) saveAddressButton.style.display = 'none';
+                      if (addAddressButton) addAddressButton.style.display = 'block';
+                      alert('Address updated successfully');
+                } catch (err) {
+                    console.error('address update error', err);
+                    alert('Update failed: ' + (err.message || 'Unknown error'));
+                }
+            });
+        }
+        if (locCurrentButton) {
+            locCurrentButton.addEventListener('click', async () => {
+                const token = getAuthToken();
+                if(!token){ alert('Please login to update profile'); return; }
+                if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
+                locCurrentButton.disabled = true;
+                locCurrentButton.textContent = 'Getting location...';
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    let address = '';
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            address = data.display_name || '';
+                        }
+                    } catch (err) {
+                        console.warn('reverse geocode failed', err);
+                    }
+                    try {
+                        const fd = new FormData();
+                        fd.append('lat', lat);
+                        fd.append('lng', lng);
+                        if (address) fd.append('address', address);
+                        const updateRes = await fetch('http://localhost:3000/api/profile', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + token },
+                            body: fd
+                        });
+                        if (!updateRes.ok) {
+                            const err = await updateRes.json().catch(()=>({message:'Update failed'}));
+                            throw new Error(err.message || 'Location update failed');
+                        }
+                        const user = await updateRes.json();
+                        if(profileAddressLabel) profileAddressLabel.textContent = user.address || 'Address not set';
+                        if(addressInput) addressInput.value = user.address || '';
+                        // if address present after location update, hide inputs and show Add button
+                        if (user.address && user.address.trim().length > 0) {
+                          if (addressInput) addressInput.style.display = 'none';
+                          if (saveAddressButton) saveAddressButton.style.display = 'none';
+                          if (addAddressButton) addAddressButton.style.display = 'block';
+                        }
+                        alert('Location updated successfully');
+                    } catch (err) {
+                        console.error('live location update failed', err);
+                        alert('Failed to update location: ' + (err.message || 'Unknown error'));
+                    } finally {
+                        locCurrentButton.disabled = false;
+                        locCurrentButton.textContent = 'Use current location';
+                    }
+                }, (error) => {
+                    alert('Unable to get location. Please enable location permission.');
+                    locCurrentButton.disabled = false;
+                    locCurrentButton.textContent = 'Use current location';
+                }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+            });
+        }
+
+                // Add-address button behavior: show inputs when clicked
+                if (addAddressButton) {
+                  addAddressButton.addEventListener('click', () => {
+                    if (addressInput) addressInput.style.display = 'block';
+                    if (saveAddressButton) saveAddressButton.style.display = 'block';
+                    addAddressButton.style.display = 'none';
+                    if (addressInput) addressInput.focus();
+                  });
+                }
+
+        document.getElementById('logout-btn').addEventListener('click', ()=>{
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
+            window.location.href = 'Login.html';
+        });
+
+        loadProfile();
+    })();
+    
+</script>
+
+<script>
+;(async function ensureLocationOverlay(){
+  const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+  if (!token) return;
+
+  async function getProfile() {
+    try {
+      const res = await fetch('http://localhost:3000/api/profile', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function hasSavedLocation(user) {
+    return user && user.location && Array.isArray(user.location.coordinates) && user.location.coordinates.length === 2 && !isNaN(user.location.coordinates[0]) && !isNaN(user.location.coordinates[1]);
+  }
+
+  function hasSavedAddress(user) {
+    return user && typeof user.address === 'string' && user.address.trim().length > 0;
+  }
+
+  const profile = await getProfile();
+  if (hasSavedLocation(profile) || hasSavedAddress(profile)) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'location-overlay';
+  overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;';
+  overlay.innerHTML = `
+    <div style="max-width:440px;width:100%;background:#ffffff;border-radius:28px;padding:28px;box-shadow:0 28px 80px rgba(0,0,0,0.28);text-align:center;font-family:Inter,Arial,sans-serif;">
+      <h2 style="margin-bottom:12px;color:#111;font-size:24px;">Location Required</h2>
+      <p style="margin-bottom:22px;color:#444;font-size:15px;line-height:1.7;">This site requires your current location to continue. Please enable location access below. The page will stay locked until permission is granted.</p>
+      <button id="loc-btn" style="width:100%;padding:14px 18px;border:none;border-radius:999px;background:#0b84ff;color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 12px 28px rgba(11,132,255,0.22);">Enable location</button>
+      <div id="loc-msg" style="margin-top:16px;color:#555;font-size:14px;min-height:24px;"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  function showMessage(text, isError = false) {
+    const msg = document.getElementById('loc-msg');
+    if (msg) {
+      msg.textContent = text;
+      msg.style.color = isError ? '#c62828' : '#555';
+    }
+  }
+
+  async function reverseGeocode(lat, lng) {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+      if (!res.ok) return '';
+      const json = await res.json();
+      return json.display_name || '';
+    } catch (err) {
+      return '';
+    }
+  }
+
+  async function saveLocation(lat, lng) {
+    try {
+      const address = await reverseGeocode(lat, lng);
+      const res = await fetch('http://localhost:3000/api/auth/update-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ lat, lng, address })
+      });
+      if (!res.ok) throw new Error('Save failed');
+      showMessage('Location saved successfully. Loading the page...');
+      setTimeout(() => {
+        const overlayEl = document.getElementById('location-overlay');
+        if (overlayEl) overlayEl.remove();
+      }, 1100);
+    } catch (err) {
+      showMessage('Could not save location. Please try again.', true);
+      const button = document.getElementById('loc-btn');
+      if (button) button.disabled = false;
+    }
+  }
+
+  const locBtn = document.getElementById('loc-btn');
+  if (!locBtn) return;
+
+  locBtn.addEventListener('click', () => {
+    locBtn.disabled = true;
+    showMessage('Requesting location permission...');
+
+    if (!navigator.geolocation) {
+      showMessage('Geolocation is not supported in your browser.', true);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      showMessage('Location found. Saving...');
+      await saveLocation(lat, lng);
+    }, (error) => {
+      showMessage('Location access denied or unavailable. Please enable location to continue.', true);
+      locBtn.disabled = false;
+    }, {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 0
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

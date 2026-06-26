@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Orders | Patel Shop</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: url(ordrbg.png) center / cover no-repeat fixed;
+}
+
+/* HEADER */
+.header {
+    background: #000000;
+    color: white;
+    padding: 15px 30px;
+    font-size: 20px;
+    font-weight: bold;
+    
+}
+
+/* CONTAINER */
+.orders-container {
+    max-width: 800px;
+    margin: 10px 100px;
+    color: rgb(14, 13, 13);
+}
+
+/* ORDER CARD */
+.order-card {
+    background: #fcfbfbd3;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 2);
+}
+
+.order-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.order-id {
+    font-weight: bold;
+}
+
+.status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: rgb(255, 255, 255);
+    text-transform: capitalize;
+}
+
+.placed { background: orange; }
+.confirmed { background: #0066cc; }
+.shipped { background: #2874f0; }
+.outfordelivery { background: #ff9800; }
+.delivered { background: green; }
+
+.admin-search {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.admin-search input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.admin-search button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    background: #2874f0;
+    color: white;
+    cursor: pointer;
+}
+
+.admin-search button:hover {
+    background: #1d5bc7;
+}
+
+
+.status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: rgb(255, 255, 255);
+}
+
+.placed { background: orange; }
+.shipped { background: #2874f0; }
+.delivered { background: green; }
+
+/* PRODUCT */
+.product {
+    display: flex;
+    gap: 15px;
+}
+
+.product img {
+    width: 80px;
+    border-radius: 5px;
+}
+
+.product-details h4 {
+    margin: 0;
+}
+
+.product-details p {
+    margin: 5px 0;
+    color: rgb(0, 0, 0);
+}
+
+/* RESPONSIVE */
+@media(max-width: 600px) {
+    .product {
+        flex-direction: column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">My Orders</div>
+
+<div class="orders-container">
+</div>
+
+<script>
+    const ORDERS_KEY = 'patelShopOrders';
+
+    // Get auth token from localStorage or sessionStorage
+    function getAuthToken() {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    console.log('Order.html - Token found:', !!token);
+    return token;
+}
+
+    // Get fetch headers with auth token
+    function getAuthHeaders() {
+        const token = getAuthToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
+    }
+
+    function formatINR(amount){ return '₹' + Number(amount).toFixed(2); }
+    function formatDate(iso){ const d = new Date(iso); return d.toLocaleString(); }
+
+    function statusClass(status){
+        if (!status) return 'placed';
+        const normalized = status.toLowerCase().replace(/\s+/g, '');
+        return ['placed','confirmed','shipped','outfordelivery','delivered'].includes(normalized) ? normalized : 'placed';
+    }
+
+    function statusText(status){
+        if (!status) return 'Placed';
+        return status.split(/\s+/).map(w => w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');
+    }
+
+    function loadOrders(){
+        return fetch('http://localhost:3000/api/orders', {
+            headers: getAuthHeaders()
+        })
+            .then(response => {
+                console.log('Orders fetch response:', response.status);
+                if (!response.ok) {
+                    console.error('Orders fetch failed:', response.status);
+                    return response.json().then(err => {
+                        console.error('Server error:', err);
+                        return [];
+                    });
+                }
+                return response.json();
+            })
+            .then(orders => {
+                console.log('Orders loaded:', orders);
+                return orders || [];
+            })
+            .catch(err => {
+                console.error('loadOrders fetch error:', err);
+                return [];
+            });
+    }
+
+    async function renderOrders(){
+        const container = document.querySelector('.orders-container');
+        container.innerHTML = '';
+        const orders = await loadOrders();
+        console.log('renderOrders - orders received:', orders);
+        if(!orders || orders.length === 0){
+            const empty = document.createElement('div'); empty.className = 'order-card'; empty.textContent = 'You have no orders yet.'; container.appendChild(empty); return;
+        }
+        orders.forEach(o => {
+            const card = document.createElement('div'); card.className = 'order-card';
+            const top = document.createElement('div'); top.className = 'order-top';
+            const id = document.createElement('span'); id.className = 'order-id'; id.textContent = 'Order id: ' + o._id;
+            const status = document.createElement('span'); status.className = 'status ' + statusClass(o.status); status.textContent = statusText(o.status);
+            top.appendChild(id); top.appendChild(status);
+            card.appendChild(top);
+
+            // date and customer
+            const meta = document.createElement('div'); meta.style.marginBottom='10px'; meta.style.color='gray'; meta.textContent = 'Placed: ' + formatDate(o.date) + ' — ' + (o.customer && o.customer.name ? o.customer.name : '');
+            card.appendChild(meta);
+
+            // products
+            (o.items || []).forEach(it => {
+                const prod = document.createElement('div'); prod.className = 'product';
+                const img = document.createElement('img'); img.src = it.img || 'https://via.placeholder.com/80';
+                const details = document.createElement('div'); details.className = 'product-details';
+                const h4 = document.createElement('h4'); h4.textContent = it.name || 'Product';
+                const p1 = document.createElement('p'); p1.textContent = 'Price: ' + formatINR(it.price || 0) + (it.qty ? ('  ×' + it.qty) : '');
+                const p2 = document.createElement('p'); p2.textContent = 'Line total: ' + formatINR((parseFloat(it.price)||0) * (it.qty||1));
+                details.appendChild(h4); details.appendChild(p1); details.appendChild(p2);
+                prod.appendChild(img); prod.appendChild(details);
+                card.appendChild(prod);
+            });
+
+            // totals and actions (no subtotal)
+            const totals = document.createElement('div'); totals.style.marginTop='12px'; totals.innerHTML = '<strong>Delivery: </strong>' + formatINR(o.delivery) + '<br><strong>Total: </strong>' + formatINR(o.total);
+            card.appendChild(totals);
+
+            container.appendChild(card);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => await renderOrders());
+
+    let isAdmin = false;
+
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            const password = prompt('Enter admin password:');
+            if (password === 'admin123') {
+                isAdmin = true;
+                showAdminButton();
+            } else {
+                alert('Incorrect password');
+            }
+        }
+    });
+
+    function showAdminButton() {
+        if (document.getElementById('adminBtn')) return; // already shown
+
+        const header = document.querySelector('.header');
+        const adminBtn = document.createElement('button');
+        adminBtn.id = 'adminBtn';
+        adminBtn.textContent = 'Admin';
+        adminBtn.style.marginLeft = '20px';
+        adminBtn.style.padding = '5px 10px';
+        adminBtn.style.background = '#fb641b';
+        adminBtn.style.border = 'none';
+        adminBtn.style.color = 'white';
+        adminBtn.style.cursor = 'pointer';
+        adminBtn.style.borderRadius = '5px';
+        adminBtn.onclick = () => showAdminPanel();
+        header.appendChild(adminBtn);
+    }
+
+    function loadAdminOrders(query = '') {
+        const listRoot = document.getElementById('adminOrderList') || document.createElement('div');
+        listRoot.id = 'adminOrderList';
+        if (!document.getElementById('adminOrderList')) {
+            document.querySelector('.orders-container').appendChild(listRoot);
+        }
+        listRoot.innerHTML = '';
+
+        fetch('http://localhost:3000/api/admin/orders')
+            .then(response => response.json())
+            .then(orders => {
+                if (query) {
+                    const q = query.toLowerCase();
+                    orders = orders.filter(o => {
+                        const idValue = (o.id || '').toString().toLowerCase();
+                        const customer = (o.customer && o.customer.name ? o.customer.name : '').toLowerCase();
+                        return idValue.includes(q) || customer.includes(q);
+                    });
+                }
+
+                if (!orders || orders.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'order-card';
+                    empty.textContent = 'No admin orders found.';
+                    listRoot.appendChild(empty);
+                    return;
+                }
+
+                orders.forEach(o => {
+                    const card = document.createElement('div'); card.className = 'order-card';
+                    const top = document.createElement('div'); top.className = 'order-top';
+                    const id = document.createElement('span'); id.className = 'order-id'; id.textContent = 'Order #' + o.id;
+
+                    const statusSelect = document.createElement('select');
+                    statusSelect.style.padding = '5px';
+                    ['placed', 'confirmed', 'shipped', 'out for delivery'].forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s;
+                        opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+                        if (s === (o.status || 'placed')) opt.selected = true;
+                        statusSelect.appendChild(opt);
+                    });
+                    statusSelect.onchange = () => updateStatus(o.id, statusSelect.value);
+
+                    top.appendChild(id);
+                    top.appendChild(statusSelect);
+
+                    const statusLabel = document.createElement('span');
+                    statusLabel.className = 'status ' + statusClass(o.status);
+                    statusLabel.style.marginLeft = '12px';
+                    statusLabel.textContent = statusText(o.status);
+                    top.appendChild(statusLabel);
+
+                    card.appendChild(top);
+
+                    const meta = document.createElement('div'); meta.style.marginBottom='10px'; meta.style.color='gray'; meta.textContent = 'Placed: ' + formatDate(o.date) + ' — ' + (o.customer && o.customer.name ? o.customer.name : '');
+                    card.appendChild(meta);
+
+                    (o.items || []).forEach(it => {
+                        const prod = document.createElement('div'); prod.className = 'product';
+                        const img = document.createElement('img'); img.src = it.img || 'https://via.placeholder.com/80';
+                        const details = document.createElement('div'); details.className = 'product-details';
+                        const h4 = document.createElement('h4'); h4.textContent = it.name || 'Product';
+                        const p1 = document.createElement('p'); p1.textContent = 'Price: ' + formatINR(it.price || 0) + (it.qty ? ('  ×' + it.qty) : '');
+                        const p2 = document.createElement('p'); p2.textContent = 'Line total: ' + formatINR((parseFloat(it.price)||0) * (it.qty||1));
+                        details.appendChild(h4); details.appendChild(p1); details.appendChild(p2);
+                        prod.appendChild(img); prod.appendChild(details);
+                        card.appendChild(prod);
+                    });
+
+                    const totals = document.createElement('div'); totals.style.marginTop='12px'; totals.innerHTML = '<strong>Delivery: </strong>' + formatINR(o.delivery || 0) + '<br><strong>Total: </strong>' + formatINR(o.total || 0);
+                    card.appendChild(totals);
+
+                    listRoot.appendChild(card);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Error loading admin orders');
+            });
+    }
+
+    function showAdminPanel() {
+        const adminBtn = document.getElementById('adminBtn');
+        if (adminBtn) adminBtn.style.display = 'none';
+
+        const container = document.querySelector('.orders-container');
+        container.innerHTML = '<h2>All Orders</h2>';
+
+        const searchContainer = document.createElement('div');
+        searchContainer.className = 'admin-search';
+
+        const searchInput = document.createElement('input');
+        searchInput.id = 'adminSearchInput';
+        searchInput.placeholder = 'Search by order ID or customer name...';
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') loadAdminOrders(searchInput.value);
+        });
+
+        const searchBtn = document.createElement('button');
+        searchBtn.textContent = 'Search';
+        searchBtn.onclick = () => loadAdminOrders(searchInput.value);
+
+        searchContainer.appendChild(searchInput);
+        searchContainer.appendChild(searchBtn);
+        container.appendChild(searchContainer);
+
+        const backBtn = document.createElement('button');
+        backBtn.textContent = 'Back to My Orders';
+
+        backBtn.style.padding = '10px 16px';
+        backBtn.style.background = '#2874f0';
+        backBtn.style.border = 'none';
+        backBtn.style.color = 'white';
+        backBtn.style.cursor = 'pointer';
+        backBtn.style.borderRadius = '5px';
+        backBtn.style.marginBottom = '20px';
+        backBtn.onclick = () => {
+            renderOrders();
+            isAdmin = false;
+            const adminBtn = document.getElementById('adminBtn');
+            if (adminBtn) adminBtn.remove();
+        };
+        container.appendChild(backBtn);
+
+        fetch('http://localhost:3000/api/admin/orders')
+            .then(response => response.json())
+            .then(orders => {
+                orders.forEach(o => {
+                    const card = document.createElement('div'); card.className = 'order-card';
+                    const top = document.createElement('div'); top.className = 'order-top';
+                    const id = document.createElement('span'); id.className = 'order-id'; id.textContent = 'Order #' + o.id;
+                    const statusSelect = document.createElement('select');
+                    statusSelect.style.padding = '5px';
+                    ['placed', 'confirmed', 'shipped', 'out for delivery'].forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s;
+                        opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+                        if (s === (o.status || 'placed')) opt.selected = true;
+                        statusSelect.appendChild(opt);
+                    });
+                    statusSelect.onchange = () => updateStatus(o.id, statusSelect.value);
+                    top.appendChild(id); top.appendChild(statusSelect);
+                    card.appendChild(top);
+
+                    const meta = document.createElement('div'); meta.style.marginBottom='10px'; meta.style.color='gray'; meta.textContent = 'Placed: ' + formatDate(o.date) + ' — ' + (o.customer && o.customer.name ? o.customer.name : '');
+                    card.appendChild(meta);
+
+                    (o.items || []).forEach(it => {
+                        const prod = document.createElement('div'); prod.className = 'product';
+                        const img = document.createElement('img'); img.src = it.img || 'https://via.placeholder.com/80';
+                        const details = document.createElement('div'); details.className = 'product-details';
+                        const h4 = document.createElement('h4'); h4.textContent = it.name || 'Product';
+                        const p1 = document.createElement('p'); p1.textContent = 'Price: ' + formatINR(it.price || 0) + (it.qty ? ('  ×' + it.qty) : '');
+                        const p2 = document.createElement('p'); p2.textContent = 'Line total: ' + formatINR((parseFloat(it.price)||0) * (it.qty||1));
+                        details.appendChild(h4); details.appendChild(p1); details.appendChild(p2);
+                        prod.appendChild(img); prod.appendChild(details);
+                        card.appendChild(prod);
+                    });
+
+                    const totals = document.createElement('div'); totals.style.marginTop='12px'; totals.innerHTML = '<strong>Delivery: </strong>' + formatINR(o.delivery || 0) + '<br><strong>Total: </strong>' + formatINR(o.total || 0);
+                    card.appendChild(totals);
+
+                    container.appendChild(card);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Error loading admin orders');
+            });
+    }
+
+    function updateStatus(orderId, newStatus) {
+        fetch(`http://localhost:3000/api/orders/${orderId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(() => {
+            alert('Status updated successfully');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Error updating status');
+        });
+    }
+</script>
+</div>
+
+
+
+</body>
+</html>

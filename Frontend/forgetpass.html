@@ -1,0 +1,302 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password</title>
+  <style>
+    :root { --bg:url('https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg'); }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      background-image: var(--bg);
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f2937;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.45);
+      backdrop-filter: blur(4px);
+      z-index: -1;
+    }
+    .reset-card {
+      width: min(480px, calc(100vw - 32px));
+      padding: 34px;
+      border-radius: 26px;
+      background: rgba(255,255,255,0.96);
+      box-shadow: 0 24px 60px rgba(15,23,42,0.22);
+      border: 1px solid rgba(148,163,184,0.25);
+    }
+    .reset-card h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      letter-spacing: -0.04em;
+    }
+    .reset-card p {
+      margin: 0 0 24px;
+      color: #475569;
+      line-height: 1.65;
+    }
+    .form-group { margin-bottom: 18px; }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #334155;
+    }
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.35);
+      background: #f8fafc;
+      color: #0f172a;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+    input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 4px rgba(56,189,248,0.12);
+    }
+    .row { display: flex; gap: 12px; align-items: flex-end; }
+    .btn {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, #22c55e, #14b8a6);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: 0.96; }
+    .btn.secondary {
+      width: 180px;
+      background: #e2e8f0;
+      color: #0f172a;
+      box-shadow: inset 0 0 0 1px rgba(15,23,42,0.08);
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .helper { margin-top: -10px; margin-bottom: 14px; color: #64748b; font-size: 13px; }
+    .error, .success { padding: 12px 14px; border-radius: 12px; font-size: 14px; margin-top: 8px; }
+    .error { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+    .success { background: #d1fae5; color: #0f5132; border: 1px solid #a7f3d0; }
+    .hide { display: none; }
+    .footer {
+      margin-top: 24px;
+      font-size: 14px;
+      color: #475569;
+      text-align: center;
+    }
+    .footer a {
+      color: #0f766e;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .footer a:hover { text-decoration: underline; }
+    @media (max-width: 520px) {
+      .row { flex-direction: column; }
+      .btn.secondary { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="reset-card" role="main" aria-labelledby="reset-title">
+    <h1 id="reset-title">Reset Your Password</h1>
+    <p>Enter your mobile number to receive a one-time code, then set a new password for your account.</p>
+
+    <form id="reset-form" onsubmit="return false" novalidate>
+      <div class="form-group">
+        <label for="mobile">Mobile number</label>
+        <input id="mobile" name="mobile" type="tel" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" placeholder="9876543210" required>
+        <div id="mobile-error" class="error hide" role="alert"></div>
+      </div>
+
+      <div class="form-group row">
+        <div style="flex:1">
+          <label for="otp">OTP code</label>
+          <input id="otp" name="otp" type="text" inputmode="numeric" maxlength="6" placeholder="Enter OTP" class="hide">
+          <div id="otp-error" class="error hide" role="alert"></div>
+        </div>
+        <button type="button" id="send-otp" class="btn secondary">Send OTP</button>
+      </div>
+
+      <div class="helper">The OTP is valid for 5 minutes.</div>
+
+      <div class="form-group">
+        <label for="password">New password</label>
+        <input id="password" name="password" type="password" placeholder="At least 6 characters" class="hide">
+        <div id="password-error" class="error hide" role="alert"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm-password">Confirm password</label>
+        <input id="confirm-password" name="confirm-password" type="password" placeholder="Repeat new password" class="hide">
+        <div id="confirm-error" class="error hide" role="alert"></div>
+      </div>
+
+      <div class="form-group">
+        <button type="submit" id="reset-btn" class="btn" disabled>Update password</button>
+      </div>
+
+      <div id="response-message" class="helper" aria-live="polite"></div>
+    </form>
+
+    <div class="footer">Remembered your password? <a href="Login.html">Sign in</a></div>
+  </main>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api/auth';
+    const mobileInput = document.getElementById('mobile');
+    const otpInput = document.getElementById('otp');
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm-password');
+    const sendOtpBtn = document.getElementById('send-otp');
+    const resetBtn = document.getElementById('reset-btn');
+    const mobileError = document.getElementById('mobile-error');
+    const otpError = document.getElementById('otp-error');
+    const passwordError = document.getElementById('password-error');
+    const confirmError = document.getElementById('confirm-error');
+    const responseMessage = document.getElementById('response-message');
+
+    function showError(element, message) {
+      element.textContent = message;
+      element.classList.remove('hide');
+    }
+    function hideError(element) {
+      element.textContent = '';
+      element.classList.add('hide');
+    }
+    function clearMessages() {
+      hideError(mobileError);
+      hideError(otpError);
+      hideError(passwordError);
+      hideError(confirmError);
+      responseMessage.textContent = '';
+      responseMessage.className = 'helper';
+    }
+    function validateMobile() {
+      const value = mobileInput.value.trim();
+      if (!/^[0-9]{10}$/.test(value)) {
+        showError(mobileError, 'Enter a valid 10-digit mobile number.');
+        return false;
+      }
+      hideError(mobileError);
+      return true;
+    }
+    function validatePassword() {
+      const value = passwordInput.value;
+      if (value.length < 6) {
+        showError(passwordError, 'Password must be at least 6 characters.');
+        return false;
+      }
+      hideError(passwordError);
+      return true;
+    }
+    function validateConfirm() {
+      if (confirmInput.value !== passwordInput.value) {
+        showError(confirmError, 'Passwords do not match.');
+        return false;
+      }
+      hideError(confirmError);
+      return true;
+    }
+    function showResetFields() {
+      otpInput.classList.remove('hide');
+      passwordInput.classList.remove('hide');
+      confirmInput.classList.remove('hide');
+      resetBtn.disabled = false;
+    }
+
+    sendOtpBtn.addEventListener('click', async () => {
+      clearMessages();
+      if (!validateMobile()) return;
+
+      sendOtpBtn.disabled = true;
+      sendOtpBtn.textContent = 'Sending...';
+
+      try {
+        const response = await fetch(`${API_URL}/send-reset-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobile: mobileInput.value.trim() })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          showError(mobileError, data.message || 'Unable to send OTP.');
+          return;
+        }
+        responseMessage.textContent = data.message;
+        responseMessage.className = 'success';
+        showResetFields();
+        sendOtpBtn.textContent = 'Resend OTP';
+      } catch (error) {
+        showError(mobileError, 'Could not contact the server. Please try again.');
+      } finally {
+        sendOtpBtn.disabled = false;
+      }
+    });
+
+    document.getElementById('reset-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearMessages();
+
+      if (!validateMobile() || !validatePassword() || !validateConfirm()) return;
+      if (!/^[0-9]{6}$/.test(otpInput.value.trim())) {
+        showError(otpError, 'Enter the 6-digit OTP.');
+        return;
+      }
+
+      resetBtn.disabled = true;
+      resetBtn.textContent = 'Updating...';
+
+      try {
+        const response = await fetch(`${API_URL}/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mobile: mobileInput.value.trim(),
+            otp: otpInput.value.trim(),
+            password: passwordInput.value
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          if (data.message?.toLowerCase().includes('otp')) {
+            showError(otpError, data.message);
+          } else if (data.message?.toLowerCase().includes('password')) {
+            showError(passwordError, data.message);
+          } else {
+            showError(mobileError, data.message || 'Failed to reset password.');
+          }
+          return;
+        }
+        responseMessage.textContent = data.message;
+        responseMessage.className = 'success';
+        mobileInput.disabled = true;
+        otpInput.disabled = true;
+        passwordInput.disabled = true;
+        confirmInput.disabled = true;
+        resetBtn.textContent = 'Updated';
+        setTimeout(() => { window.location.href = 'Login.html'; }, 1700);
+      } catch (error) {
+        showError(mobileError, 'Server error. Please try again later.');
+      } finally {
+        resetBtn.disabled = false;
+        resetBtn.textContent = 'Update password';
+      }
+    });
+  </script>
+</body>
+</html>
