@@ -26,7 +26,8 @@
       z-index:2;
       width:100%;
       max-width:300px;
-      background:linear-gradient(180deg, #ffffff2a, rgba(255,255,255,0.06));
+      max-height: 560px;
+      background:linear-gradient(180deg, #ffffff85, rgba(255, 255, 255, 0.405));
       padding:28px;
       border-radius:18px;
       box-shadow:0 18px 48px rgba(0,0,0,0.18), 0 3px 24px rgba(46,204,113,0.04) inset;
@@ -35,15 +36,48 @@
       -webkit-backdrop-filter: blur(10px);
       color:#0c2630;
     }
+    .footer{ font-size:13px; color:rgba(255, 255, 255, 0.815); text-align:center; margin-bottom:5px }
     h1{ text-align:center; margin:0 0 16px; font-size:24px; color:#07202a; }
-    .form-group{ margin-bottom:14px; }
 
-    /* Match spacing behavior seen on Login.html */
+    /* slider wrapper */
+    .slider{ overflow:hidden; }
+    .slider-track{ display:flex; }
+    .pane{ flex:0 0 100%; visibility:hidden; opacity:0; transition: opacity 200ms ease, visibility 0ms 200ms; }
+    .pane.active{ visibility:visible; opacity:1; transition: opacity 200ms ease, visibility 0ms 0ms; }
+
+    .form-group{ margin-bottom:14px; }
     .form-group:last-child{ margin-bottom:0; }
     #signup-form .btn,
     #shopkeeper-form .btn{ margin-top:6px; }
-    .slider-actions{ display:flex; justify-content:space-between; margin-top:16px; gap:8px; }
-    .footer{ font-size:13px; color:rgba(255, 255, 255, 0.815); text-align:center; margin-top:14px }
+
+    .slider-actions{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      margin-top:16px;
+      width:100%;
+    }
+    .slider-actions .btn{
+      flex:1;
+      text-align:center;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:14px;
+      background:rgba(255,255,255,0.5);
+      color:#07202a;
+      border:1px solid rgba(7,32,42,0.1);
+      box-shadow:none;
+      font-weight:600;
+      cursor:pointer;
+      transition:background 180ms ease, color 180ms ease;
+    }
+    .slider-actions .btn.active-tab{
+      background:linear-gradient(135deg,#c8f79b,#57d17f);
+      color:#043f28;
+      border-color:transparent;
+    }
+    .slider-actions .btn:hover{ background:rgba(255,255,255,0.75); }
+    .slider-actions .btn.active-tab:hover{ background:linear-gradient(135deg,#b8e88a,#47c06e); }
 
     label{ display:block; font-size:13px; margin-bottom:6px; color:rgba(7,32,42,0.85); }
     input[type="tel"], input[type="text"], input[type="password"]{
@@ -87,10 +121,8 @@
     .hide{ display:none; }
     .success{ color:#1b6b2d; font-weight:700; }
     .error{ color:#9b1c1c; background:rgba(255,230,230,0.9); font-size:13px; padding:8px; border-radius:6px; }
-    .footer{ font-size:13px; color:rgba(255, 255, 255, 0.815); text-align:center; margin-top:14px }
+   
     a{ color:#0aa36a; text-decoration:underline; }
-    .pane{ visibility: hidden; opacity: 0; }
-    .pane.active{ visibility: visible; opacity: 1; }
     @media (max-width:420px){ .container{ margin:18px; padding:22px; } }
   </style>
 </head>
@@ -101,57 +133,52 @@
     <h1 id="signup-title">Create Account</h1>
 
     <div class="slider" id="signup-slider">
-      <div class="slider-track" id="signup-track">
+      <div class="slider-track" id="signup-track" style="transition: transform 260ms ease;">
+
+        <!-- Customer pane -->
         <div class="pane pane-customer active" id="pane-customer">
           <form id="signup-form" onsubmit="return false" novalidate>
-
-      <!-- ✅ NEW: Name field -->
-      <div class="form-group">
-        <strong><label for="name">Full Name</label></strong>
-        <input id="name" name="name" type="text" placeholder="e.g. Rahul Patel" required>
-        <div id="name-error" class="error hide"></div>
-      </div>
-
-      <div class="form-group">
-        <strong><label for="mobile">Mobile Number</label></strong>
-        <input id="mobile" name="mobile" type="tel" inputmode="numeric" pattern="[0-9]{10}" placeholder="e.g., 9876543210" required>
-        <div id="mobile-error" class="error hide"></div>
-      </div>
-
-      <div class="form-group row">
-        <div style="flex:1">
-          <strong><label for="otp">OTP</label></strong>
-          <input id="otp" name="otp" type="text" inputmode="numeric" placeholder="Enter OTP" class="hide">
-          <div id="otp-error" class="error hide"></div>
-        </div>
-        <div style="width:130px;display:flex;align-items:end;">
-          <button type="button" id="send-otp" class="btn">Send OTP</button>
-        </div>
-      </div>
-
-
-      <div class="form-group">
-        <strong><label for="password">New password</label></strong>
-        <input id="password" name="password" type="password" placeholder="Create a password" required>
-        <div id="password-error" class="error hide"></div>
-      </div>
-
-      <div class="form-group">
-        <button type="button" id="verify-btn" class="btn secondary hide">Verify OTP</button>
-        <button type="submit" id="submit-btn" class="btn" disabled>Sign up</button>
-      </div>
-
-      <div class="small">
-        <span id="message" aria-live="polite"></span>
-      </div>
+            <div class="form-group">
+              <strong><label for="name">Full Name</label></strong>
+              <input id="name" name="name" type="text" placeholder="e.g. Rahul Patel" required>
+              <div id="name-error" class="error hide"></div>
+            </div>
+            <div class="form-group">
+              <strong><label for="mobile">Mobile Number</label></strong>
+              <input id="mobile" name="mobile" type="tel" inputmode="numeric" pattern="[0-9]{10}" placeholder="e.g., 9876543210" required>
+              <div id="mobile-error" class="error hide"></div>
+            </div>
+            <div class="form-group row">
+              <div style="flex:1">
+                <strong><label for="otp">OTP</label></strong>
+                <input id="otp" name="otp" type="text" inputmode="numeric" placeholder="Enter OTP" class="hide">
+                <div id="otp-error" class="error hide"></div>
+              </div>
+              <div style="width:130px;display:flex;align-items:end;">
+                <button type="button" id="send-otp" class="btn">Send OTP</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <strong><label for="password">New password</label></strong>
+              <input id="password" name="password" type="password" placeholder="Create a password" required>
+              <div id="password-error" class="error hide"></div>
+            </div>
+            <div class="form-group">
+              <button type="button" id="verify-btn" class="btn secondary hide">Verify OTP</button>
+              <button type="submit" id="submit-btn" class="btn" disabled>Register</button>
+            </div>
+            <div class="small">
+              <span id="message" aria-live="polite"></span>
+            </div>
           </form>
         </div>
 
+        <!-- Shopkeeper pane -->
         <div class="pane pane-shopkeeper" id="pane-shopkeeper">
           <form id="shopkeeper-form" onsubmit="return false" novalidate>
             <div class="form-group">
-              <strong><label for="shopName">Shop Keeper Name </label></strong>
-              <input id="shopkeeperName" name="shopkepeername" type="text" placeholder="e.g. Patel Rahul" required>
+              <strong><label for="shopkeeperName">Full Name</label></strong>
+              <input id="shopkeeperName" name="shopkeeperName" type="text" placeholder="e.g. Rahul Patel" required>
               <div id="shopkeeperName-error" class="error hide"></div>
             </div>
             <div class="form-group">
@@ -161,7 +188,7 @@
             </div>
             <div class="form-group">
               <strong><label for="shopMobile">Mobile Number</label></strong>
-              <input id="shopMobile" name="shopMobile" type="tel" inputmode="numeric" pattern="[0-9]{10}" placeholder="Shop contact number" required>
+              <input id="shopMobile" name="shopMobile" type="tel" inputmode="numeric" pattern="[0-9]{10}" placeholder="e.g., 9876543210" required>
               <div id="shopMobile-error" class="error hide"></div>
             </div>
             <div class="form-group row">
@@ -181,24 +208,23 @@
             </div>
             <div class="form-group">
               <button type="button" id="shop-verify-btn" class="btn secondary hide">Verify OTP</button>
-              <button type="submit" id="shop-submit" class="btn">Register Shopkeeper</button>
+              <button type="submit" id="shop-submit" class="btn" disabled>Register</button>
             </div>
             <div class="small">
               <span id="shop-message" aria-live="polite"></span>
             </div>
-            <div class="small" style="margin-top:8px;">Already have shop account? <a href="Login.html">Login</a></div>
           </form>
         </div>
       </div>
 
+      <!-- Customer / Shopkeeper toggle at bottom inside slider -->
       <div class="slider-actions">
-        <button id="to-customer" class="btn secondary" type="button">Customer</button>
+        <button id="to-customer" class="btn active-tab" type="button">Customer</button>
         <button id="to-shopkeeper" class="btn" type="button">Shopkeeper</button>
       </div>
-
     </div>
 
-    <strong><div class="footer">Already have an account?</strong><i><a href="Login.html">Log in</a></div></i>
+    <div class="footer"><strong>Already have an account?</strong> <i><a href="Login.html">Log in</a></i></div>
   </div>
 
   <script>
@@ -320,18 +346,19 @@
       const shopVerifyBtn = document.getElementById('shop-verify-btn');
       const shopSubmitBtn = document.getElementById('shop-submit');
       const shopMessage = document.getElementById('shop-message');
+      const shopkeeperNameError = document.getElementById('shopkeeperName-error');
       const shopNameError = document.getElementById('shopName-error');
       const shopMobileError = document.getElementById('shopMobile-error');
       const shopOtpError = document.getElementById('shopOtp-error');
       const shopPasswordError = document.getElementById('shopPassword-error');
 
-       function validateShopName() {
+      function validateShopkeeperName() {
         const v = shopkeeperNameInput.value.trim();
         const ok = v.length >= 2;
-        if (!ok) { shopNameError.textContent = 'Please enter shop keeper name'; shopNameError.classList.remove('hide'); }
+        if (!ok) { shopkeeperNameError.textContent = 'Please enter your full name'; shopkeeperNameError.classList.remove('hide'); }
         else { shopkeeperNameError.classList.add('hide'); }
         return ok;
-       }
+      }
 
       function validateShopName() {
         const v = shopNameInput.value.trim();
@@ -350,6 +377,7 @@
       }
 
       shopSendOtpBtn.addEventListener('click', async () => {
+        if (!validateShopkeeperName()) return;
         if (!validateShopName()) return;
         if (!validateShopMobile()) return;
 
@@ -436,22 +464,19 @@
       let active = 0; // 0 customer, 1 shopkeeper
       function show(index){
         active = index;
-        track.style.transform = `translateX(${ -index * 2 }%)`;
+        track.style.transform = `translateX(${ -index * 100 }%)`;
+
+        toCustomer.classList.toggle('active-tab', index === 0);
+        toShop.classList.toggle('active-tab', index === 1);
+
         panes.forEach((p, i) => {
-          if (i === index) p.classList.add('active');
-          else p.classList.remove('active');
+          p.classList.toggle('active', i === index);
         });
       }
       toCustomer.addEventListener('click', ()=> show(0));
       toShop.addEventListener('click', ()=> show(1));
 
-      // basic swipe support
-      let startX = 0, dx = 0;
-      track.addEventListener('pointerdown', (ev)=>{ startX = ev.clientX; track.setPointerCapture(ev.pointerId); });
-      track.addEventListener('pointermove', (ev)=>{ if(!startX) return; dx = ev.clientX - startX; track.style.transition = 'none'; track.style.transform = `translateX(${ -active*100 + (dx / track.clientWidth) * 100 }%)`; });
-      track.addEventListener('pointerup', (ev)=>{ track.style.transition = ''; if (Math.abs(dx) > 60) { if (dx < 0) show(Math.min(1, active+1)); else show(Math.max(0, active-1)); } else show(active); startX = 0; dx = 0; });
       // initialize
-      track.style.transition = 'transform 260ms ease';
       show(0);
     })();
   </script>

@@ -89,6 +89,7 @@
         opacity: 1;
     }
 
+    /* ---------- Primary login button ---------- */
     .btn {
         width: 100%;
         padding: 12px;
@@ -119,11 +120,42 @@
     }
 
     .error{color:#ff0000;background:#fff0f0;border:1px solid #ffb3b3;padding:8px;border-radius:8px;margin-top:8px;text-align:center;}
-    /* Slider panes for customer / shopkeeper */
+
+    /* ---------- Slider panes for customer / shopkeeper ---------- */
     .slider { width:100%; max-width:360px; }
     .slider-track { display:flex; width:200%; transform:translateX(0); transition:transform 260ms ease; }
     .pane { width:50%; padding-right:18px; box-sizing:border-box; visibility: hidden; opacity: 0; }
     .pane.active{ visibility: visible; opacity: 1; }
+
+    /* ---------- Toggle buttons (Customer / Shopkeeper) — style from signup ---------- */
+    .toggle-row {
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      margin-top:16px;
+      width:100%;
+    }
+    .toggle-row .btn-toggle{
+      flex:1;
+      text-align:center;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:14px;
+      background:rgba(255,255,255,0.2);
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.2);
+      font-weight:600;
+      cursor:pointer;
+      transition:background 180ms ease, color 180ms ease;
+    }
+    .toggle-row .btn-toggle.active-tab{
+      background:linear-gradient(135deg,#c8f79b,#57d17f);
+      color:#043f28;
+      border-color:transparent;
+    }
+    .toggle-row .btn-toggle:hover{ background:rgba(255,255,255,0.35); }
+    .toggle-row .btn-toggle.active-tab:hover{ background:linear-gradient(135deg,#b8e88a,#47c06e); }
+
     @media (max-width:420px){ .login-card { width:92%; padding:20px } .pane { width:100% } .slider-track { width:200% } }
 </style>
 </head>
@@ -136,6 +168,7 @@
 
         <div class="slider" id="login-slider">
             <div class="slider-track" id="login-track">
+                <!-- Customer pane -->
                 <div class="pane active">
                     <div class="input-box">
                         <input id="mobile" type="tel" placeholder="Mobile Number" inputmode="numeric" pattern="[0-9]{10}">
@@ -157,9 +190,10 @@
 
                     <button id="loginBtn" class="btn">Login</button>
 
-                    <div class="signup">Don’t have an account? <a href="signup.html">Signup</a></div>
+                    <div class="signup">Don't have an account? <a href="signup.html">Sign up</a></div>
                 </div>
 
+                <!-- Shopkeeper pane -->
                 <div class="pane">
                     <div class="input-box">
                         <input id="shop-mobile" type="tel" placeholder="Shop Mobile" inputmode="numeric" pattern="[0-9]{10}">
@@ -167,15 +201,25 @@
                     <div class="input-box">
                         <input id="shop-password" type="password" placeholder="Shop Password">
                     </div>
+
+                    <div class="remember">
+                        <div>
+                            <input id="shop-remember" type="checkbox" checked>
+                            <label for="shop-remember">Remember me</label>
+                        </div>
+                        <a href="forgetpass.html">Forgot password?</a>
+                    </div>
+
                     <div id="shop-error" class="error" style="display:none" role="alert" aria-live="assertive"></div>
                     <button id="shopLoginBtn" class="btn">Shopkeeper Login</button>
-                    <div class="signup">Need a shop account? <a href="signup.html">Register</a></div>
+                    <div class="signup">Need a shop account? <a href="signup.html">Sign up</a></div>
                 </div>
             </div>
 
-            <div style="display:flex;justify-content:space-between;margin-top:12px;gap:8px;">
-                <button id="cus-btn" class="btn secondary" type="button">Customer</button>
-                <button id="shop-btn" class="btn" type="button">Shopkeeper</button>
+            <!-- Toggle buttons -->
+            <div class="toggle-row">
+                <button id="cus-btn" class="btn-toggle active-tab" type="button">Customer</button>
+                <button id="shop-btn" class="btn-toggle" type="button">Shopkeeper</button>
             </div>
         </div>
  
@@ -218,7 +262,6 @@
                 return;
             }
 
-            // Store token (remember => localStorage, else sessionStorage)
             if (data.token) {
                 if (remember && remember.checked) {
                     localStorage.setItem('authToken', data.token);
@@ -230,7 +273,6 @@
            const displayName = data.user?.name || data.user?.mobile || m;
              localStorage.setItem('userName', displayName);
 
-            // Login successful
             window.location.href = 'WEB.HTML';
         } catch (err) {
             showError('Something Went Wrong.');
@@ -258,6 +300,7 @@
     const shopMobile = document.getElementById('shop-mobile');
     const shopPassword = document.getElementById('shop-password');
     const shopError = document.getElementById('shop-error');
+    const shopRemember = document.getElementById('shop-remember');
     let active = 0;
     function show(i){
         active = i;
@@ -266,18 +309,21 @@
             if (idx === i) p.classList.add('active');
             else p.classList.remove('active');
         });
+        cusBtn.classList.toggle('active-tab', i === 0);
+        shopBtn.classList.toggle('active-tab', i === 1);
     }
     cusBtn.addEventListener('click', ()=> show(0));
     shopBtn.addEventListener('click', ()=> show(1));
 
-    // swipe
+    // Swipe — no pointer capture so anchor clicks work
     let startX=0, dx=0;
-    track.addEventListener('pointerdown', (ev)=>{ startX = ev.clientX; track.setPointerCapture(ev.pointerId); });
+    track.addEventListener('pointerdown', (ev)=>{ startX = ev.clientX; dx = 0; });
     track.addEventListener('pointermove', (ev)=>{ if(!startX) return; dx = ev.clientX - startX; track.style.transition = 'none'; track.style.transform = `translateX(${ -active*50 + (dx / track.clientWidth) * 100 }%)`; });
     track.addEventListener('pointerup', ()=>{ track.style.transition=''; if(Math.abs(dx)>40){ if(dx<0) show(Math.min(1,active+1)); else show(Math.max(0,active-1)); } else show(active); startX=0; dx=0; });
+    track.addEventListener('pointerleave', ()=>{ if(startX){ track.style.transition=''; show(active); startX=0; dx=0; } });
     track.style.transition='transform 260ms ease'; show(0);
 
-    // shopkeeper login handler (frontend only)
+    // shopkeeper login handler
     shopLoginBtn.addEventListener('click', async ()=>{
         shopError.style.display = 'none';
         const m = shopMobile.value.trim(); const p = shopPassword.value;
@@ -288,7 +334,13 @@
             const resp = await fetch('http://localhost:3000/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ mobile: m, password: p, role: 'shopkeeper' }) });
             const data = await resp.json();
             if(!resp.ok){ shopError.textContent = data.message || 'Login failed'; shopError.style.display='block'; return; }
-            if (data.token) { localStorage.setItem('authToken', data.token); }
+            if (data.token) {
+                if (shopRemember && shopRemember.checked) {
+                    localStorage.setItem('authToken', data.token);
+                } else {
+                    sessionStorage.setItem('authToken', data.token);
+                }
+            }
             window.location.href = 'WEB.HTML';
         }catch(err){ shopError.textContent='Something went wrong'; shopError.style.display='block'; }
         finally{ shopLoginBtn.disabled = false; }
