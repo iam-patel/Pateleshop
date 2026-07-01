@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nearby Shops</title>
+  <style>
+    :root { --primary:#ff7a1a; --primary-dark:#e05f00; --bg:#fff8f3; --card:#fff; --text:#1f2937; --muted:#6b7280; --border:#f3d7c0; }
+    * { box-sizing: border-box; }
+    body { font-family: Inter, Arial, sans-serif; margin:0; background:linear-gradient(135deg,#fff7ed 0%,#fffdf9 100%); color:var(--text); }
+    nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:rgba(255,255,255,0.95); box-shadow:0 8px 24px rgba(0,0,0,0.06); position:sticky; top:0; z-index:10; }
+    .logo-area img { width:220px; height:auto; }
+    .header-actions button, .header-actions a { border:none; border-radius:999px; padding:8px 12px; cursor:pointer; text-decoration:none; }
+    .header-actions .secondary { background:#fff; color:var(--primary-dark); border:1px solid var(--border); }
+    .container { max-width:1180px; margin:0 auto; padding:18px; }
+    .hero { background:linear-gradient(120deg, rgba(255,122,26,0.96), rgba(255,166,77,0.9)); color:#fff; border-radius:24px; padding:24px; margin-bottom:18px; }
+    .hero h1 { margin:0 0 8px; font-size:clamp(24px,3.4vw,32px); }
+    .hero p { margin:0; opacity:0.95; max-width:760px; }
+    .shop-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; }
+    .shop-card { background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden; cursor:pointer; box-shadow:0 10px 24px rgba(0,0,0,0.05); }
+    .shop-card img { width:100%; height:180px; object-fit:cover; }
+    .shop-card .content { padding:14px; }
+    .shop-card h3 { margin:0 0 6px; font-size:19px; }
+    .shop-card p { margin:4px 0; color:var(--muted); font-size:14px; }
+    .shop-card .pill { display:inline-block; margin-top:8px; padding:6px 10px; border-radius:999px; background:#fff3e8; color:var(--primary-dark); font-size:12px; font-weight:700; }
+    .section { display:none; }
+    .section.active { display:block; }
+    .shop-detail { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:16px; margin-bottom:16px; display:flex; gap:16px; align-items:center; }
+    .shop-detail img { width:92px; height:92px; object-fit:cover; border-radius:16px; }
+    .product-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+    .product-card { background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden; }
+    .product-card img { width:100%; height:180px; object-fit:cover; }
+    .product-card .content { padding:12px; }
+    .product-card h4 { margin:6px 0; }
+    .product-card .price { color:var(--primary-dark); font-weight:700; margin:6px 0; }
+    .product-card .description { color:var(--muted); font-size:14px; min-height:40px; }
+    .product-card .actions { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+    .product-card button { border:none; background:var(--primary); color:#fff; padding:8px 10px; border-radius:10px; cursor:pointer; }
+    .empty, .loading { background:#fff; border:1px dashed var(--border); border-radius:18px; padding:20px; text-align:center; color:var(--muted); }
+    .owner-panel { background:#fff; border:1px solid var(--border); border-radius:20px; padding:16px; margin-top:16px; }
+    .owner-panel input, .owner-panel textarea, .owner-panel select { width:100%; padding:10px; margin-bottom:10px; border:1px solid var(--border); border-radius:10px; }
+    .owner-panel button { border:none; padding:10px 12px; border-radius:10px; cursor:pointer; background:var(--primary); color:#fff; margin-right:8px; }
+    .owner-panel .mini { background:#f8fafc; color:#111; border:1px solid #e5e7eb; }
+    .owner-list { display:grid; gap:10px; margin-top:10px; }
+    .owner-item { border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center; }
+    @media (max-width:680px){ .shop-detail{flex-direction:column; align-items:flex-start;} .header-actions{display:flex; gap:8px;} }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo-area">
+      <a href="WEB.HTML"><img src="Logo.png" alt="Patel Shop logo"></a>
+    </div>
+    <div class="header-actions">
+      <a class="secondary" href="WEB.HTML">Home</a>
+      <button class="secondary" id="ownerToggleBtn" type="button">Shop Owner Panel</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Nearby shops for you</h1>
+      <p>Find shops close to your location, open their profile, and browse the products added by that shop owner.</p>
+    </div>
+
+    <section id="shopsSection" class="section active">
+      <div id="shopGrid" class="shop-grid"></div>
+    </section>
+
+    <section id="productsSection" class="section">
+      <button id="backBtn" style="border:none;background:#fff;color:var(--primary-dark);border:1px solid var(--border);padding:8px 12px;border-radius:999px;cursor:pointer;margin-bottom:12px;">← Back to shops</button>
+      <div id="shopDetail"></div>
+      <div id="productGrid" class="product-grid"></div>
+    </section>
+
+    <section id="ownerSection" class="section">
+      <div class="owner-panel">
+        <h3 style="margin-top:0;">Manage your shop products</h3>
+        <p style="margin-top:-4px;color:var(--muted);">Only the shop owner can add, edit, or delete products from this panel.</p>
+        <form id="productForm">
+          <input id="productName" placeholder="Product name" required />
+          <input id="productPrice" type="number" step="0.01" placeholder="Price" required />
+          <input id="productCategory" placeholder="Category" />
+          <input id="productImageUrl" placeholder="Image URL" />
+          <textarea id="productDescription" placeholder="Description"></textarea>
+          <input id="productSizes" placeholder="Sizes (S, M, L)" />
+          <input type="hidden" id="productId" />
+          <button type="submit">Save product</button>
+          <button class="mini" type="button" id="cancelEditBtn">Cancel</button>
+        </form>
+        <div id="ownerProducts" class="owner-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api';
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    let shops = [];
+    let selectedShop = null;
+    let editingProductId = null;
+
+    function getAuthHeaders(includeJson = false) {
+      const headers = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      if (includeJson) headers['Content-Type'] = 'application/json';
+      return headers;
+    }
+
+    async function loadShops() {
+      const shopGrid = document.getElementById('shopGrid');
+      shopGrid.innerHTML = '<div class="loading">Loading nearby shops...</div>';
+      try {
+        const res = await fetch(`${API_URL}/products`);
+        const products = await res.json();
+        const grouped = new Map();
+        products.forEach((product) => {
+          const key = (product.shopName || 'Patel Shop').toLowerCase();
+          if (!grouped.has(key)) {
+            grouped.set(key, {
+              name: product.shopName || 'Patel Shop',
+              image: product.shopImage || product.images?.[0] || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80',
+              city: product.shopCity || 'Nearby location',
+              address: product.shopAddress || 'Freshly curated products',
+              description: product.shopDescription || 'Popular local shop',
+              products: []
+            });
+          }
+          grouped.get(key).products.push(product);
+        });
+        shops = Array.from(grouped.values());
+        if (!shops.length) {
+          shopGrid.innerHTML = '<div class="empty">No shops found yet.</div>';
+          return;
+        }
+        shopGrid.innerHTML = '';
+        shops.forEach((shop) => {
+          const card = document.createElement('article');
+          card.className = 'shop-card';
+          card.innerHTML = `
+            <img src="${shop.image}" alt="${shop.name}">
+            <div class="content">
+              <h3>${shop.name}</h3>
+              <p>${shop.city}</p>
+              <p>${shop.address}</p>
+              <p>${shop.description}</p>
+              <span class="pill">${shop.products.length} products</span>
+            </div>`;
+          card.addEventListener('click', () => openShop(shop));
+          shopGrid.appendChild(card);
+        });
+      } catch (err) {
+        shopGrid.innerHTML = '<div class="empty">Could not load shops right now.</div>';
+      }
+    }
+
+    function openShop(shop) {
+      selectedShop = shop;
+      document.getElementById('shopsSection').classList.remove('active');
+      document.getElementById('productsSection').classList.add('active');
+      document.getElementById('shopDetail').innerHTML = `
+        <img src="${shop.image}" alt="${shop.name}">
+        <div>
+          <h2 style="margin:0 0 6px;">${shop.name}</h2>
+          <p style="margin:2px 0;color:var(--muted);">${shop.city}</p>
+          <p style="margin:2px 0;color:var(--muted);">${shop.address}</p>
+          <p style="margin:2px 0;color:var(--muted);">${shop.description}</p>
+        </div>`;
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '';
+      if (!shop.products.length) {
+        grid.innerHTML = '<div class="empty">This shop has no products yet.</div>';
+        return;
+      }
+      shop.products.forEach((product) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        const image = product.images?.[0] || product.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=80';
+        card.innerHTML = `
+          <img src="${image}" alt="${product.name}">
+          <div class="content">
+            <h4>${product.name}</h4>
+            <div class="price">₹${Number(product.price || 0).toFixed(2)}</div>
+            <div class="description">${product.description || 'Freshly added by the shop owner.'}</div>
+            <div class="actions"><span style="color:var(--muted);font-size:13px;">${product.category || 'Featured'}</span><button type="button">Add</button></div>
+          </div>`;
+        card.querySelector('button').addEventListener('click', () => alert(`${product.name} added to bag`));
+        grid.appendChild(card);
+      });
+    }
+
+    function backToShops() {
+      document.getElementById('productsSection').classList.remove('active');
+      document.getElementById('shopsSection').classList.add('active');
+    }
+
+    async function loadMyShopProducts() {
+      if (!token) {
+        document.getElementById('ownerProducts').innerHTML = '<div class="empty">Please log in as a shop owner to manage products.</div>';
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/products/my-shop`, { headers: getAuthHeaders() });
+        const products = await res.json();
+        const list = document.getElementById('ownerProducts');
+        list.innerHTML = '';
+        if (!products.length) {
+          list.innerHTML = '<div class="empty">No products yet. Add your first product.</div>';
+          return;
+        }
+        products.forEach((product) => {
+          const item = document.createElement('div');
+          item.className = 'owner-item';
+          item.innerHTML = `
+            <div>
+              <strong>${product.name}</strong><br>
+              <span style="color:var(--muted);font-size:13px;">₹${Number(product.price || 0).toFixed(2)}</span>
+            </div>
+            <div>
+              <button type="button" data-edit="${product._id}">Edit</button>
+              <button class="mini" type="button" data-delete="${product._id}">Delete</button>
+            </div>`;
+          item.querySelector('[data-edit]').addEventListener('click', () => fillForm(product));
+          item.querySelector('[data-delete]').addEventListener('click', () => deleteProduct(product._id));
+          list.appendChild(item);
+        });
+      } catch (err) {
+        document.getElementById('ownerProducts').innerHTML = '<div class="empty">Unable to load your products.</div>';
+      }
+    }
+
+    function fillForm(product) {
+      document.getElementById('productName').value = product.name || '';
+      document.getElementById('productPrice').value = product.price || '';
+      document.getElementById('productCategory').value = product.category || '';
+      document.getElementById('productImageUrl').value = product.images?.[0] || '';
+      document.getElementById('productDescription').value = product.description || '';
+      document.getElementById('productSizes').value = (product.sizes || []).join(', ');
+      document.getElementById('productId').value = product._id;
+      editingProductId = product._id;
+      document.getElementById('ownerSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      try {
+        const res = await fetch(`${API_URL}/products/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+        if (!res.ok) throw new Error('Delete failed');
+        await loadMyShopProducts();
+      } catch (err) {
+        alert('Could not delete product');
+      }
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!token) {
+        alert('Please log in first');
+        return;
+      }
+      const payload = {
+        name: document.getElementById('productName').value.trim(),
+        price: document.getElementById('productPrice').value,
+        category: document.getElementById('productCategory').value.trim(),
+        image: document.getElementById('productImageUrl').value.trim(),
+        description: document.getElementById('productDescription').value.trim(),
+        sizes: document.getElementById('productSizes').value.trim()
+      };
+      const method = editingProductId ? 'PUT' : 'POST';
+      const url = editingProductId ? `${API_URL}/products/${editingProductId}` : `${API_URL}/products`;
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed');
+        document.getElementById('productForm').reset();
+        document.getElementById('productId').value = '';
+        editingProductId = null;
+        await loadMyShopProducts();
+        await loadShops();
+      } catch (err) {
+        alert(err.message || 'Could not save product');
+      }
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      document.getElementById('productForm').reset();
+      document.getElementById('productId').value = '';
+      editingProductId = null;
+    });
+
+    document.getElementById('backBtn').addEventListener('click', backToShops);
+    document.getElementById('ownerToggleBtn').addEventListener('click', () => {
+      document.getElementById('shopsSection').classList.remove('active');
+      document.getElementById('productsSection').classList.remove('active');
+      document.getElementById('ownerSection').classList.add('active');
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadShops();
+      await loadMyShopProducts();
+    });
+  </script>
+</body>
+</html>

@@ -2,10 +2,9 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
-import User from '../models/user.js';
-import { SECRET } from '../config/jwt.js';
+import User from '../models/user.js'; 
+import { SECRET, REFRESH_SECRET } from '../config/jwt.js';
 
-// Middleware to require bearer token and attach user
 async function requireAuth(req, res, next) {
   try {
     const auth = req.headers.authorization || '';
@@ -23,10 +22,8 @@ async function requireAuth(req, res, next) {
 
 const router = express.Router();
 
-// Send OTP
 router.post('/send-otp', async (req, res) => {
   const { mobile } = req.body;
-
   if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
     return res.status(400).json({ message: 'Invalid mobile number' });
   }
@@ -36,7 +33,6 @@ router.post('/send-otp', async (req, res) => {
 
   try {
     let user = await User.findOne({ mobile });
-
     if (!user) {
       user = new User({ mobile, otp, otpExpires });
     } else {
@@ -46,7 +42,6 @@ router.post('/send-otp', async (req, res) => {
 
     await user.save();
 
-    // Send SMS via Fast2SMS
     await axios.post('https://www.fast2sms.com/dev/bulkV2', {
       route: 'q',
       message: `Your Patel Shop OTP is ${otp}`,
@@ -66,14 +61,11 @@ router.post('/send-otp', async (req, res) => {
   }
 });
 
-// Verify OTP
 router.post('/verify-otp', async (req, res) => {
   const { mobile, otp } = req.body;
   try {
     const user = await User.findOne({ mobile, otp, otpExpires: { $gt: new Date() } });
-    if (!user) {
-      return res.json({ success: false });
-    }
+    if (!user) return res.json({ success: false });
     user.otp = undefined;
     user.otpExpires = undefined;
     await user.save();
@@ -83,7 +75,6 @@ router.post('/verify-otp', async (req, res) => {
   }
 });
 
-// Send reset OTP for existing accounts
 router.post('/send-reset-otp', async (req, res) => {
   const { mobile } = req.body;
   if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
@@ -91,9 +82,7 @@ router.post('/send-reset-otp', async (req, res) => {
   }
   try {
     const user = await User.findOne({ mobile });
-    if (!user) {
-      return res.status(404).json({ message: 'No account found for this mobile number' });
-    }
+    if (!user) return res.status(404).json({ message: 'No account found for this mobile number' });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
@@ -119,9 +108,7 @@ router.post('/send-reset-otp', async (req, res) => {
       console.error('Fast2SMS send-reset-otp error:', smsError.response?.data || smsError.message);
     }
 
-    const message = smsSent
-      ? 'OTP sent successfully. Enter it below to reset your password.'
-      : 'OTP generated successfully. Enter it below to reset your password.';
+    const message = smsSent ? 'OTP sent successfully. Enter it below to reset your password.' : 'OTP generated successfully. Enter it below to reset your password.';
     res.json({ message });
   } catch (err) {
     console.error(err.response?.data || err.message);
@@ -129,27 +116,16 @@ router.post('/send-reset-otp', async (req, res) => {
   }
 });
 
-// Reset password using OTP
 router.post('/reset-password', async (req, res) => {
   const { mobile, otp, password } = req.body;
-  if (!mobile || !otp || !password) {
-    return res.status(400).json({ message: 'Mobile, OTP, and new password are required' });
-  }
-  if (!/^[0-9]{10}$/.test(mobile)) {
-    return res.status(400).json({ message: 'Invalid mobile number' });
-  }
-  if (!/^[0-9]{6}$/.test(otp)) {
-    return res.status(400).json({ message: 'Invalid OTP' });
-  }
-  if (password.length < 6) {
-    return res.status(400).json({ message: 'Password must be at least 6 characters' });
-  }
+  if (!mobile || !otp || !password) return res.status(400).json({ message: 'Mobile, OTP, and new password are required' });
+  if (!/^[0-9]{10}$/.test(mobile)) return res.status(400).json({ message: 'Invalid mobile number' });
+  if (!/^[0-9]{6}$/.test(otp)) return res.status(400).json({ message: 'Invalid OTP' });
+  if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters' });
 
   try {
     const user = await User.findOne({ mobile, otp, otpExpires: { $gt: new Date() } });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
-    }
+    if (!user) return res.status(400).json({ message: 'Invalid or expired OTP' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
@@ -163,25 +139,20 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-// Signup
 router.post('/signup', async (req, res) => {
-  const { mobile, name, password, address, lat, lng } = req.body;
+  const { mobile, name, password, address, lat, lng, role, shopName, shopDescription } = req.body;
   try {
     const existingUser = await User.findOne({ mobile });
-
-    if (!existingUser || existingUser.otp || existingUser.otpExpires) {
-      return res.status(400).json({ message: 'Verify OTP first' });
-    }
-
-    if (existingUser.password) {
-      return res.status(400).json({ message: 'Account already created' });
-    }
+    if (!existingUser || existingUser.otp || existingUser.otpExpires) return res.status(400).json({ message: 'Verify OTP first' });
+    if (existingUser.password) return res.status(400).json({ message: 'Account already created' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     existingUser.password = hashedPassword;
     existingUser.name = name || '';
+    existingUser.role = role === 'shopkeeper' ? 'shopkeeper' : 'customer';
+    if (shopName) existingUser.shopName = shopName;
+    if (shopDescription) existingUser.shopDescription = shopDescription;
 
-    // Save location if provided (lat,lng) — store as GeoJSON Point
     const latNum = lat !== undefined ? parseFloat(lat) : undefined;
     const lngNum = lng !== undefined ? parseFloat(lng) : undefined;
     if (!isNaN(latNum) && !isNaN(lngNum)) {
@@ -190,45 +161,54 @@ router.post('/signup', async (req, res) => {
     if (address) existingUser.address = address;
 
     await existingUser.save();
-
     res.status(201).json({ message: 'Account created successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Login
 router.post('/login', async (req, res) => {
   const { mobile, password } = req.body;
-  if (!mobile || !password) {
-    return res.status(400).json({ message: 'Mobile and password required' });
-  }
+  if (!mobile || !password) return res.status(400).json({ message: 'Mobile and password required' });
   try {
     const user = await User.findOne({ mobile });
-    if (!user || !user.password) {
-      return res.status(400).json({ message: 'Invalid mobile or password' });
-    }
+    if (!user || !user.password) return res.status(400).json({ message: 'Invalid mobile or password' });
     const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(401).json({ message: 'Invalid mobile or password' });
-    }
-    const payload = { id: user._id, mobile: user.mobile, name: user.name, email: user.email };
-    const token = jwt.sign(payload, SECRET, { expiresIn: '1h' });
-    res.json({ success: true, token, user: payload });
+    if (!match) return res.status(401).json({ message: 'Invalid mobile or password' });
+    const payload = {
+      id: user._id,
+      mobile: user.mobile,
+      name: user.name,
+      email: user.email,
+      role: user.role || 'customer',
+      shopName: user.shopName || '',
+      shopDescription: user.shopDescription || '',
+      shopAddress: user.shopAddress || '',
+      shopCity: user.shopCity || '',
+      shopImage: user.shopImage || '',
+      shopLatitude: user.shopLatitude,
+      shopLongitude: user.shopLongitude
+    };
+    const accessToken = jwt.sign(payload, SECRET, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ id: user._id, mobile: user.mobile }, REFRESH_SECRET, { expiresIn: '7d' });
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/api/auth/refresh-token' });
+
+    res.json({ success: true, token: accessToken, user: payload });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Update location for authenticated user
 router.post('/update-location', requireAuth, async (req, res) => {
   const { lat, lng, address } = req.body;
   try {
     const latNum = lat !== undefined ? parseFloat(lat) : undefined;
     const lngNum = lng !== undefined ? parseFloat(lng) : undefined;
-    if (latNum === undefined || lngNum === undefined || isNaN(latNum) || isNaN(lngNum)) {
-      return res.status(400).json({ message: 'Invalid coordinates' });
-    }
+    if (latNum === undefined || lngNum === undefined || isNaN(latNum) || isNaN(lngNum)) return res.status(400).json({ message: 'Invalid coordinates' });
     req.user.location = { type: 'Point', coordinates: [lngNum, latNum] };
     if (address) req.user.address = address;
     await req.user.save();
@@ -238,5 +218,35 @@ router.post('/update-location', requireAuth, async (req, res) => {
   }
 });
 
-export default router;
+router.post('/refresh-token', async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Refresh token not found' });
+  }
 
+  try {
+    const payload = jwt.verify(refreshToken, REFRESH_SECRET);
+    const user = await User.findById(payload.id);
+
+    if (!user || user.refreshToken !== refreshToken) {
+      return res.status(403).json({ message: 'Invalid refresh token' });
+    }
+
+    const userPayload = {
+      id: user._id,
+      mobile: user.mobile,
+      name: user.name,
+      email: user.email,
+      role: user.role || 'customer',
+    };
+
+    const newAccessToken = jwt.sign(userPayload, SECRET, { expiresIn: '15m' });
+    res.json({ success: true, token: newAccessToken, user: userPayload });
+
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid or expired refresh token' });
+  }
+});
+
+
+export default router;

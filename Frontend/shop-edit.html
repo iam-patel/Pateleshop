@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop Owner Dashboard</title>
+  <style>
+    :root { --primary:#ff7a1a; --primary-dark:#e05f00; --bg:#fff8f3; --card:#fff; --text:#111827; --muted:#6b7280; --border:#f3d7c0; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, Arial, sans-serif; background:var(--bg); color:var(--text); }
+    nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:rgba(255,255,255,0.95); box-shadow:0 8px 24px rgba(0,0,0,0.06); }
+    .logo img { width:220px; height:auto; }
+    .wrap { max-width:1180px; margin:0 auto; padding:20px; }
+    .hero { background:linear-gradient(120deg, rgba(255,122,26,0.96), rgba(255,166,77,0.9)); color:#fff; border-radius:24px; padding:24px; margin-bottom:18px; }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:16px; margin-bottom:16px; }
+    .panel h3 { margin-top:0; }
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
+    .panel input, .panel textarea { width:100%; padding:10px; border:1px solid var(--border); border-radius:10px; margin-bottom:10px; }
+    .panel button { border:none; padding:10px 12px; border-radius:10px; cursor:pointer; background:var(--primary); color:#fff; margin-right:8px; }
+    .panel .ghost { background:#fff; color:var(--primary-dark); border:1px solid var(--border); }
+    .products-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; }
+    .product-card { border:1px solid var(--border); border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 10px 24px rgba(0,0,0,0.04); }
+    .product-card img { width:100%; height:180px; object-fit:cover; display:block; background:#f9f2ea; }
+    .product-card .meta { padding:12px; }
+    .product-card .meta strong { display:block; margin-bottom:6px; }
+    .product-card .actions { display:flex; gap:8px; padding:0 12px 12px; }
+    .empty { background:#fff; border:1px dashed var(--border); border-radius:14px; padding:18px; text-align:center; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo"><a href="WEB.HTML"><img src="Logo.png" alt="Patel Shop logo"></a></div>
+    <div><a href="Products.html" style="text-decoration:none;color:var(--primary-dark);font-weight:700;">View products</a></div>
+  </nav>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Manage your shop inventory</h1>
+      <p>Add, edit, or remove products that should appear for your shop only.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Add or edit product</h3>
+      <form id="productForm">
+        <div class="form-grid">
+          <input id="productName" placeholder="Product name" required />
+          <input id="productPrice" type="number" step="0.01" placeholder="Price" required />
+          <input id="productCategory" placeholder="Category" />
+          <input id="productImageUrl" placeholder="Image URL" />
+        </div>
+        <textarea id="productDescription" placeholder="Description"></textarea>
+        <input id="productSizes" placeholder="Sizes (S, M, L)" />
+        <input type="hidden" id="productId" />
+        <div>
+          <button type="submit">Save product</button>
+          <button class="ghost" type="button" id="cancelEditBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h3>Your products</h3>
+      <div id="ownerProducts" class="products-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api/shopOwner';
+    let editingProductId = null;
+
+    function getToken() {
+      return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    }
+
+    function getAuthHeaders(includeJson = false) {
+      const headers = {};
+      const token = getToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      if (includeJson) headers['Content-Type'] = 'application/json';
+      return headers;
+    }
+
+    function parseSizes(value) {
+      return value.split(',').map((item) => item.trim()).filter(Boolean);
+    }
+
+    function buildPayload() {
+      const image = document.getElementById('productImageUrl').value.trim();
+      return {
+        name: document.getElementById('productName').value.trim(),
+        price: Number(document.getElementById('productPrice').value),
+        category: document.getElementById('productCategory').value.trim(),
+        images: image ? [image] : [],
+        description: document.getElementById('productDescription').value.trim(),
+        sizes: parseSizes(document.getElementById('productSizes').value)
+      };
+    }
+
+    async function loadProducts() {
+      const list = document.getElementById('ownerProducts');
+      const token = getToken();
+      if (!token) {
+        list.innerHTML = '<div class="empty">Please sign in as a shop owner to manage products.</div>';
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/products`, { headers: getAuthHeaders() });
+        const products = await res.json();
+        list.innerHTML = '';
+        if (!products.length) {
+          list.innerHTML = '<div class="empty">You have no products yet. Add your first one.</div>';
+          return;
+        }
+        products.forEach((product) => {
+          const card = document.createElement('div');
+          card.className = 'product-card';
+          const imageUrl = product.images?.[0] || 'https://via.placeholder.com/300x180?text=No+Image';
+          card.innerHTML = `
+            <img src="${imageUrl}" alt="${product.name || 'Product'}" />
+            <div class="meta">
+              <strong>${product.name || 'Untitled product'}</strong>
+              <div style="color:var(--primary-dark); font-weight:700; margin-bottom:6px;">₹${Number(product.price || 0).toFixed(2)}</div>
+              <div style="color:var(--muted); font-size:13px; margin-bottom:4px;">${product.category || 'Uncategorized'}</div>
+              <div style="color:var(--muted); font-size:13px;">${product.description ? product.description : 'No description added'}</div>
+            </div>
+            <div class="actions">
+              <button type="button" data-edit="${product._id}">Edit</button>
+              <button class="ghost" type="button" data-delete="${product._id}">Delete</button>
+            </div>`;
+          card.querySelector('[data-edit]').addEventListener('click', () => fillForm(product));
+          card.querySelector('[data-delete]').addEventListener('click', () => deleteProduct(product._id));
+          list.appendChild(card);
+        });
+      } catch (err) {
+        list.innerHTML = '<div class="empty">Unable to load your products right now.</div>';
+      }
+    }
+
+    function fillForm(product) {
+      document.getElementById('productName').value = product.name || '';
+      document.getElementById('productPrice').value = product.price || '';
+      document.getElementById('productCategory').value = product.category || '';
+      document.getElementById('productImageUrl').value = product.images?.[0] || '';
+      document.getElementById('productDescription').value = product.description || '';
+      document.getElementById('productSizes').value = (product.sizes || []).join(', ');
+      document.getElementById('productId').value = product._id;
+      editingProductId = product._id;
+      document.getElementById('productName').focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      try {
+        const res = await fetch(`${API_URL}/products/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+        if (!res.ok) throw new Error('Delete failed');
+        await loadProducts();
+      } catch (err) {
+        alert('Could not delete product');
+      }
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = getToken();
+      if (!token) {
+        alert('Please sign in first');
+        return;
+      }
+      const payload = buildPayload();
+      const method = editingProductId ? 'PUT' : 'POST';
+      const url = editingProductId ? `${API_URL}/products/${editingProductId}` : `${API_URL}/products`;
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { ...getAuthHeaders(true), 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed');
+        document.getElementById('productForm').reset();
+        document.getElementById('productId').value = '';
+        editingProductId = null;
+        await loadProducts();
+      } catch (err) {
+        alert(err.message || 'Could not save product');
+      }
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      document.getElementById('productForm').reset();
+      document.getElementById('productId').value = '';
+      editingProductId = null;
+    });
+
+    window.addEventListener('DOMContentLoaded', loadProducts);
+  </script>
+</body>
+</html>

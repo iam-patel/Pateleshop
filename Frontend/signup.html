@@ -438,12 +438,13 @@
           return;
         }
 
-        const res = await fetch(`${API_URL}/signup`, {
+        const res = await fetch(`${API_URL}/shop-signup`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             mobile: shopMobileInput.value,
-            name: shopNameInput.value.trim(),
+            name: shopkeeperNameInput.value.trim(),
+            shopName: shopNameInput.value.trim(),
             password: shopPasswordInput.value,
             role: 'shopkeeper'
           })

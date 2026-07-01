@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   photo: { type: String },
   otp: { type: String },
-  otpExpires: { type: Date }
+  otpExpires: { type: Date },
+  refreshToken: { type: String }
 });
 
 // Store user's geolocation (GeoJSON Point) and a human-readable address

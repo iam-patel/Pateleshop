@@ -84,7 +84,6 @@
           aria-label="Show all products"
         >Show All</button>
       </div>
-      <button id="adminToggle" aria-pressed="false" title="Toggle admin mode" style="padding:6px 10px; border-radius:6px; background:#222; color:#ebebeb; border:none; cursor:pointer;">Admin</button>
       <button id="cartBtn" aria-label="Open cart">Cart <span id="cartCount">0</span></button>
     </div>
   </nav>
@@ -102,56 +101,6 @@
     <div id="productsGrid" class="products" aria-live="polite"></div>
   </section>
 
-  <section class="admin-panel admin-only" aria-hidden="true">
-    <h3 style="margin-top:0">Add / Edit Product (admin)</h3>
-    <form id="addProductForm">
-      <label>Product name</label>
-      <input id="prodName" type="text" required style="width:100%; padding:8px; margin:6px 0" />
-
-      <div style="display:flex; gap:8px">
-        <input id="prodPrice" type="number" step="0.01" placeholder="Price" style="flex:1; padding:8px" required />
-        <input id="prodId" type="text" placeholder="Optional ID" style="width:140px; padding:8px" />
-      </div>
-
-      <label style="margin-top:8px">Category (optional)</label>
-      <div style="display:flex; gap:8px; margin-bottom:8px">
-        <select id="prodCategorySelect" style="flex:1; padding:8px"></select>
-        <input id="prodCategoryNew" type="text" placeholder="Or type new" style="flex:1; padding:8px" />
-      </div>
-
-      <label>Image URL</label>
-      <input id="prodImageUrl" type="url" placeholder="https://..." style="width:100%; padding:8px; margin:6px 0" />
-      <label style="margin-top:8px">Or upload images (max 10)</label>
-      <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-        <input id="prodImageFile" type="file" accept="image/*" multiple style="flex:1" />
-        <span id="fileCount" style="white-space: nowrap; color: #666; font-size: 12px;">0 selected</span>
-      </div>
-      <div id="imageThumbnails" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; min-height:60px; padding:8px; background:#f9f9f9; border-radius:6px; border:1px solid #eee;"></div>
-
-      <b><label style="margin-top:8px">Description (optional)</label></b>
-      <textarea id="prodDescription" placeholder="Product description..." style="width:100%; padding:8px; margin:6px 0; min-height:60px; resize:vertical;"></textarea>
-
-      <label style="margin-top:8px">Sizes (optional, comma-separated)</label>
-      <input id="prodSizes" type="text" placeholder="S, M, L, XL" style="width:100%; padding:8px; margin:6px 0" />
-
-      <div style="display:flex; gap:8px; align-items:center; margin-top:10px">
-        <button id="submitProductBtn" type="submit" class="action-btn" style="background:#2c3e50; color:#fff">Add Product</button>
-        <button id="cancelEditBtn" type="button" onclick="cancelEdit()" style="display:none">Cancel</button>
-      </div>
-
-      <div id="categoryManager" style="margin-top:12px; padding:10px; border:1px dashed #eee; border-radius:8px; background:#fafafa">
-        <strong>Category Management</strong>
-        <div style="display:flex; gap:8px; margin-top:8px">
-          <input id="newCategoryName" placeholder="New category" style="flex:1; padding:8px" />
-          <button type="button" onclick="handleAddCategory()">Add Category</button>
-        </div>
-        <div id="categoryList" style="margin-top:10px"></div>
-      </div>
-    </form>
-  </section>
-
-  
- 
 
   <aside id="cartSidebar" class="cartSidebar">
     <button id="closeCart" aria-label="Close cart" style="position:absolute; right:12px; top:12px; background:transparent; border:none; font-size:20px; cursor:pointer;">✕</button>
@@ -313,82 +262,9 @@
 
     function generateId(){ return 'p'+Date.now().toString(36).slice(-6); }
 
-    // Add product from admin form
-    document.getElementById('addProductForm').addEventListener('submit', async function(e){
-      e.preventDefault();
-      if(!document.body.classList.contains('admin')) { alert('Enable admin mode to add products.'); return; }
-      const name=document.getElementById('prodName').value.trim();
-      const price=parseFloat(document.getElementById('prodPrice').value)||0;
-      const customId=document.getElementById('prodId').value.trim();
-      const url=document.getElementById('prodImageUrl').value.trim();
-      const description=document.getElementById('prodDescription').value.trim();
-      const sizesStr=document.getElementById('prodSizes').value.trim();
-      const sizes = sizesStr ? sizesStr.split(',').map(s=>s.trim()).filter(s=>s) : [];
-      const isEditing = window.editingProductId && window.editingProductId.length>0;
-      if(!isEditing && customId && document.querySelector(`.card[data-id="${customId}"]`)){ alert('A product with this ID already exists. Choose a different ID or leave the ID field blank.'); return; }
+    async function adminRemoveProduct(id){ const card = document.querySelector(`.card[data-id="${id}"]`); if(!card) return alert('Product not found'); if(!confirm('Remove this product from the catalog?')) return; try { const response = await fetch(`http://localhost:3000/api/products/${id}`, { method: 'DELETE' }); if(response.ok){ card.remove(); const prevCartLen = items.length; items = items.filter(i=>i.id !== id); if(items.length !== prevCartLen){ saveCartToStorage(items); updateCartUI('Product removed from cart'); } const cartBox=document.getElementById('cartBox'); cartBox.innerHTML='Product removed'; cartBox.style.display='block'; setTimeout(()=>cartBox.style.display='none',1200); } else { alert('Error removing product'); } } catch(err) { console.error(err); alert('Error removing product'); } }
 
-      const fileInput = document.getElementById('prodImageFile');
-      let response;
-      try {
-        if (accumulatedFiles && accumulatedFiles.length) {
-          // Validate file count before submission
-          if (accumulatedFiles.length > 10) {
-            alert('Maximum 10 images allowed.');
-            return;
-          }
-          // Submit multipart/form-data with files
-          const form = new FormData();
-          form.append('name', name);
-          form.append('price', String(price));
-          form.append('category', (document.getElementById('prodCategoryNew').value.trim()) || (document.getElementById('prodCategorySelect').value) || '');
-          form.append('description', description);
-          form.append('sizes', sizes.join(','));
-          // append accumulated files under 'images'
-          for(let i=0;i<accumulatedFiles.length;i++) form.append('images', accumulatedFiles[i]);
-          if(isEditing){
-            response = await fetch(`http://localhost:3000/api/products/${window.editingProductId}`, { method: 'PUT', body: form });
-          } else {
-            response = await fetch('http://localhost:3000/api/products', { method: 'POST', body: form });
-          }
-        } else {
-          // No files: send JSON payload using image URL if provided
-          if(!url){ alert('Please provide an image URL or upload a file.'); return; }
-          const productData = { name, price, category: (document.getElementById('prodCategoryNew').value.trim()) || (document.getElementById('prodCategorySelect').value) || '', images: [url], description, sizes };
-          if(isEditing){
-            response = await fetch(`http://localhost:3000/api/products/${window.editingProductId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(productData) });
-          } else {
-            response = await fetch('http://localhost:3000/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(productData) });
-          }
-        }
-
-        if(response && response.ok){
-          const product = await response.json();
-          // Refresh products
-          const products = await loadProductsFromStorage();
-          document.getElementById('productsGrid').innerHTML = '';
-          products.forEach(p => addProductToDOM(p));
-          document.getElementById('addProductForm').reset();
-          accumulatedFiles = []; // Reset accumulated files
-          renderImageThumbnails(); // Clear thumbnails
-          const fileCount = document.getElementById('fileCount'); if(fileCount) fileCount.textContent = '0 selected';
-          document.getElementById('prodId').disabled=false; window.editingProductId=null; document.getElementById('submitProductBtn').textContent='Add Product'; document.getElementById('cancelEditBtn').style.display='none';
-          const cartBox = document.getElementById('cartBox'); cartBox.innerHTML = isEditing ? 'Product updated' : 'Product added'; cartBox.style.display='block'; setTimeout(()=>cartBox.style.display='none',1100);
-        } else {
-          const err = response ? await response.json() : {};
-          console.error('Save error', err);
-          alert(err.message || 'Error saving product');
-        }
-      } catch(err) {
-        console.error(err);
-        alert('Product listed');
-      }
-    });
-
-    async function adminRemoveProduct(id){ if(!document.body.classList.contains('admin')) { alert('Enable admin mode to remove products.'); return; } const card = document.querySelector(`.card[data-id="${id}"]`); if(!card) return alert('Product not found'); if(!confirm('Remove this product from the catalog?')) return; try { const response = await fetch(`http://localhost:3000/api/products/${id}`, { method: 'DELETE' }); if(response.ok){ card.remove(); // remove from cart if present
-      const prevCartLen = items.length; items = items.filter(i=>i.id !== id); if(items.length !== prevCartLen){ saveCartToStorage(items); updateCartUI('Product removed from cart'); }
-      const cartBox=document.getElementById('cartBox'); cartBox.innerHTML='Product removed'; cartBox.style.display='block'; setTimeout(()=>cartBox.style.display='none',1200); } else { alert('Error removing product'); } } catch(err) { console.error(err); alert('Error removing product'); } }
-
-    function adminEditProduct(id){ if(!document.body.classList.contains('admin')) { alert('Enable admin mode to edit products.'); return; } const card=document.querySelector(`.card[data-id="${id}"]`); if(!card) return alert('Product not found'); const name=(card.querySelector('h3') && card.querySelector('h3').textContent)||''; const priceText=(card.querySelector('.price')&&card.querySelector('.price').textContent)||''; const price=parseFloat(priceText.replace(/[^0-9.]/g,''))||0; const img=(card.querySelector('img')&&card.querySelector('img').src)||''; const description=(card.querySelector('.description')&&card.querySelector('.description').textContent)||''; const sizes = []; card.querySelectorAll('input[type="radio"][name^="size-"]').forEach(radio => sizes.push(radio.value)); document.getElementById('prodName').value=name; document.getElementById('prodPrice').value=price; document.getElementById('prodId').value=id; document.getElementById('prodId').disabled=true; document.getElementById('prodImageUrl').value=img; document.getElementById('prodDescription').value=description; document.getElementById('prodSizes').value=sizes.join(', '); const prev = document.getElementById('prodPreview'); if(prev){ prev.src = img; prev.style.display = img ? 'inline-block' : 'none'; } window.editingProductId=id; document.getElementById('submitProductBtn').textContent='Save Changes'; document.getElementById('cancelEditBtn').style.display='inline-block'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function adminEditProduct(id){ const card=document.querySelector(`.card[data-id="${id}"]`); if(!card) return alert('Product not found'); const name=(card.querySelector('h3') && card.querySelector('h3').textContent)||''; const priceText=(card.querySelector('.price')&&card.querySelector('.price').textContent)||''; const price=parseFloat(priceText.replace(/[^0-9.]/g,''))||0; const img=(card.querySelector('img')&&card.querySelector('img').src)||''; const description=(card.querySelector('.description')&&card.querySelector('.description').textContent)||''; const sizes = []; card.querySelectorAll('input[type="radio"][name^="size-"]').forEach(radio => sizes.push(radio.value)); document.getElementById('prodName').value=name; document.getElementById('prodPrice').value=price; document.getElementById('prodId').value=id; document.getElementById('prodId').disabled=true; document.getElementById('prodImageUrl').value=img; document.getElementById('prodDescription').value=description; document.getElementById('prodSizes').value=sizes.join(', '); const prev = document.getElementById('prodPreview'); if(prev){ prev.src = img; prev.style.display = img ? 'inline-block' : 'none'; } window.editingProductId=id; document.getElementById('submitProductBtn').textContent='Save Changes'; document.getElementById('cancelEditBtn').style.display='inline-block'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
     function updateProductDOM(product){ const card=document.querySelector(`.card[data-id="${product._id}"]`); if(!card){ addProductToDOM(product); syncProductsToStorage(); return; } const img=card.querySelector('img'); if(img){ img.src=product.image || product.img; img.alt=product.name; } const h3=card.querySelector('h3'); if(h3) h3.textContent=product.name; const p=card.querySelector('.price'); if(p) p.textContent='₹'+(product.price?product.price.toFixed(2):'0.00'); const descEl=card.querySelector('.description'); if(product.description){ if(descEl) descEl.textContent=product.description; else { const newDesc=document.createElement('p'); newDesc.className='description'; newDesc.textContent=product.description; newDesc.style.fontSize='14px'; newDesc.style.color='#666'; newDesc.style.margin='4px 12px'; card.insertBefore(newDesc, card.querySelector('.price').nextSibling); } } else if(descEl) descEl.remove(); const sizesEl=card.querySelector('.sizes'); if(product.sizes && product.sizes.length > 0){ if(sizesEl) sizesEl.innerHTML=''; else { const newSizes=document.createElement('div'); newSizes.className='sizes'; newSizes.style.display='flex'; newSizes.style.gap='4px'; newSizes.style.margin='8px 12px'; newSizes.style.flexWrap='wrap'; card.insertBefore(newSizes, card.querySelector('.price').nextSibling.nextSibling); } const container = sizesEl || card.querySelector('.sizes'); container.innerHTML=''; product.sizes.forEach(size => { const label = document.createElement('label'); label.style.display='flex'; label.style.alignItems='center'; label.style.gap='4px'; const radio = document.createElement('input'); radio.type='radio'; radio.name='size-' + product.id; radio.value=size; radio.style.margin='0'; const span = document.createElement('span'); span.textContent=size; label.appendChild(radio); label.appendChild(span); container.appendChild(label); }); } else if(sizesEl) sizesEl.remove(); const oldCategory = card.getAttribute('data-category')||''; const newCategory = product.category||''; if(oldCategory !== newCategory) card.setAttribute('data-category', newCategory); syncProductsToStorage(); // reflect changes in cart items as well
       let updated = false;
@@ -597,61 +473,7 @@
     }
     async function clearCart(){ if(items.length===0) return; items=[]; await saveCartToStorage(items); updateCartUI('Cart cleared'); document.getElementById('cartSidebar').classList.remove('open'); }
 
-    // Admin toggle (visible now). Clicking prompts for password if not unlocked; toggles admin mode when unlocked.
-    document.getElementById('adminToggle').addEventListener('click', async ()=>{
-      const unlocked = sessionStorage.getItem('patelAdminUnlocked') === 'true';
-      const btn = document.getElementById('adminToggle');
-      if(!unlocked){
-        const pw = prompt('Enter admin password:');
-        if(pw === null) return; // cancelled
-        if(pw === getAdminPassword()){
-          unlockAdminSession();
-          btn.setAttribute('aria-pressed','true');
-          btn.style.background = '#b91c1c';
-          const cartBox=document.getElementById('cartBox'); cartBox.innerHTML='Admin unlocked for this session'; cartBox.style.display='block'; setTimeout(()=>cartBox.style.display='none',1200);
-        } else { alert('Incorrect password'); }
-        return;
-      }
-      // already unlocked: toggle active admin mode
-      if(document.body.classList.contains('admin')){ lockAdminSession(); btn.setAttribute('aria-pressed','false'); btn.style.background = '#222'; const cartBox=document.getElementById('cartBox'); cartBox.innerHTML='Admin disabled'; cartBox.style.display='block'; setTimeout(()=>cartBox.style.display='none',1100); }
-      else { enableAdminMode(); btn.setAttribute('aria-pressed','true'); btn.style.background = '#b91c1c'; const cartBox=document.getElementById('cartBox'); cartBox.innerHTML='Admin enabled'; cartBox.style.display='block'; setTimeout(()=>cartBox.style.display='none',1100); }
-    });
-
-    // Admin unlock helpers: manage admin mode (button remains hidden)
-    function getAdminPassword(){ return localStorage.getItem('patelAdminPassword') || 'patel@123'; }
-    function enableAdminMode(){
-      document.body.classList.add('admin');
-      document.querySelectorAll('.admin-edit').forEach(el=> el.style.display = 'inline-block');
-      document.querySelectorAll('.admin-remove').forEach(el=> el.style.display = 'inline-block');
-      document.querySelectorAll('.admin-only').forEach(el=> { el.style.display = 'block'; el.setAttribute('aria-hidden','false'); });
-      document.querySelectorAll('.add-to-cart').forEach(el => el.style.display = 'none');
-      const btn = document.getElementById('adminToggle'); if(btn) btn.setAttribute('aria-pressed','true');
-    }
-    function disableAdminMode(){
-      document.body.classList.remove('admin');
-      document.querySelectorAll('.admin-edit').forEach(el=> el.style.display = 'none');
-      document.querySelectorAll('.admin-remove').forEach(el=> el.style.display = 'none');
-      document.querySelectorAll('.admin-only').forEach(el=> { el.style.display = 'none'; el.setAttribute('aria-hidden','true'); });
-      document.querySelectorAll('.add-to-cart').forEach(el => el.style.display = 'inline-block');
-      const btn = document.getElementById('adminToggle'); if(btn) btn.setAttribute('aria-pressed','false');
-    }
-    function unlockAdminSession(){ sessionStorage.setItem('patelAdminUnlocked','true'); // reveal Admin button so user can enable admin mode manually
-      const btn = document.getElementById('adminToggle'); if(btn) btn.style.display = 'inline-block'; }
-    function lockAdminSession(){ sessionStorage.removeItem('patelAdminUnlocked'); disableAdminMode(); const btn = document.getElementById('adminToggle'); if(btn){ btn.style.display='none'; btn.setAttribute('aria-pressed','false'); btn.style.background = '#222'; } }
-
-    // keyboard shortcut: Ctrl+Shift+A to unlock admin toggle
-    document.addEventListener('keydown', (e)=>{
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC')>=0;
-      const ctrl = isMac ? e.metaKey : e.ctrlKey;
-      if(ctrl && e.shiftKey && e.code === 'KeyA'){
-        e.preventDefault();
-        const pw = prompt('Enter admin unlock password:');
-        if(pw === null) return; // cancelled
-        if(pw === getAdminPassword()){
-          unlockAdminSession(); const cartBox=document.getElementById('cartBox'); cartBox.innerHTML='Admin unlocked for this session'; cartBox.style.display='block'; setTimeout(()=>cartBox.style.display='none',1200);
-        } else { alert('Incorrect password'); }
-      }
-    });
+    // Admin management is now handled from the dedicated shop-owner page.
 
     // Cart UI handlers
     document.getElementById('cartBtn').addEventListener('click', ()=>{ document.getElementById('cartSidebar').classList.add('open'); });
@@ -670,17 +492,10 @@
     document.addEventListener('DOMContentLoaded', async ()=>{ // ensure categories
       let cats = loadCategoriesFromStorage(); if(!cats || !Array.isArray(cats) || cats.length===0){ cats=['Jeans','T-Shirt','Perfumes','Shoes','Shirts','Yours']; saveCategoriesToStorage(cats); }
       populateCategorySelect(); renderCategoryManager(); renderCategorySidebar(); const products = await loadProductsFromStorage(); products.forEach(p=>addProductToDOM(p)); // hide admin controls initially
-      document.querySelectorAll('.admin-edit, .admin-remove').forEach(el=> el.style.display = 'none'); document.querySelectorAll('.admin-only').forEach(el=> { el.style.display = 'none'; el.setAttribute('aria-hidden','true'); });
-      // show add-to-cart buttons
+      document.querySelectorAll('.admin-edit, .admin-remove').forEach(el=> el.style.display = 'none');
       document.querySelectorAll('.add-to-cart').forEach(el => el.style.display = 'inline-block');
-      // load cart from database
       items = await loadCartFromStorage();
-      // render cart from storage (persisted items)
       updateCartUI();
-      // if session unlocked, show Admin button (do not auto-enable admin mode)
-      if(sessionStorage.getItem('patelAdminUnlocked') === 'true'){
-        const btn = document.getElementById('adminToggle'); if(btn) btn.style.display = 'inline-block';
-      }
       // simple demo: allow clicking product card to add to cart for non-admin
       // Removed to prevent double add
       // Category search functionality

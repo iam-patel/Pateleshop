@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { json } from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import productRoutes from './routes/productRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -11,6 +12,7 @@ import checkoutRoutes from './routes/checkoutRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import webhooks from './webhooks.js';
 import profileRoutes from './routes/profileRoutes.js';
+import shopOwnerRoutes from './routes/shopOwnerRoutes.js';
 import path from 'path';
 import connectDB from './config/db.js';
 
@@ -20,6 +22,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('Frontend'));
 
@@ -32,6 +35,7 @@ connectDB();
 // Routes
 app.use('/api', productRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/shopOwner', shopOwnerRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', cartRoutes);
 app.use('/api', checkoutRoutes);
@@ -45,8 +49,3 @@ app.listen(PORT, () => {
 
 console.log('API KEY:', process.env.FAST2SMS_API_KEY);
 console.log('API KEY:', process.env.GROQ_API_KEY);
-
-
-
-
-

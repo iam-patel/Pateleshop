@@ -226,6 +226,7 @@
 </div>
 
 <script>
+    // for Customer Login
 (() => {
     const mobile = document.getElementById('mobile');
     const password = document.getElementById('password');
@@ -290,7 +291,7 @@
     });
 })();
 
-// Slider behavior for login page
+// for Shopkeeper LoginSlider behavior for login page
 (function(){
     const track = document.getElementById('login-track');
     const cusBtn = document.getElementById('cus-btn');
@@ -331,7 +332,7 @@
         if(p.length<6){ shopError.textContent='Password must be at least 6 chars'; shopError.style.display='block'; return; }
         try{
             shopLoginBtn.disabled = true;
-            const resp = await fetch('http://localhost:3000/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ mobile: m, password: p, role: 'shopkeeper' }) });
+            const resp = await fetch('http://localhost:3000/api/shopOwner/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ mobile: m, password: p, role: 'shopkeeper' }) });
             const data = await resp.json();
             if(!resp.ok){ shopError.textContent = data.message || 'Login failed'; shopError.style.display='block'; return; }
             if (data.token) {
@@ -341,7 +342,7 @@
                     sessionStorage.setItem('authToken', data.token);
                 }
             }
-            window.location.href = 'WEB.HTML';
+            window.location.href = 'shop-edit.html';
         }catch(err){ shopError.textContent='Something went wrong'; shopError.style.display='block'; }
         finally{ shopLoginBtn.disabled = false; }
     });

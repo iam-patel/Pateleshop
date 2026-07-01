@@ -174,8 +174,9 @@
                     <button id="add-address-btn" type="button" style="display:none;width:100%;padding:10px;border:none;border-radius:10px;background:#10b981;color:#fff;font-weight:700;cursor:pointer;margin-bottom:12px;">Add address</button>
                     <div style="height:12px"></div>
                     <a href="Order.html">My Orders</a>
-                    <button type="button" onclick="showPage('about')">About Us</button>
-                    <button type="button" onclick="showPage('contact')">Contact Us</button>
+                    <a href="shops.html">Nearby Shops</a>
+                     <a href="#about">About Us</a>
+                     <a href="#">Contact Us</a>
                     <a href="signup.html">Sign Up</a>
                 </div>
                 <div class="profile-actions">
@@ -186,27 +187,13 @@
     </div>
 </nav>
 
-<div class="content">
-
-        <div id="about" class="page">
- 
-            <h3>This Store Owner Is Patel Rahul.</h3>
-        </div>
-
-        <div id="contact" class="page">
-            <h3>Email: rp3313113@gmail.com</h3>
-            <h3>Phone: +916207106584</h3>
-        </div>
-    </div>
-
-
 
 <!-- HERO -->
 <div class="page-wrap">
 <div class="hero">
     <h1>Premium Products Just for You</h1>
     <p>Discover the best deals on fashion, gadgets, and more.</p>
-    <a href="Products.html"><button class="shop-btn">Shop Now</button></a>
+    <a href="shopscategory.html"><button class="shop-btn">Shop Now</button></a>
 </div>
 
 </div>
@@ -713,8 +700,8 @@ async function sendMessage() {
       locBtn.disabled = false;
     }, {
       enableHighAccuracy: true,
-      timeout: 20000,
-      maximumAge: 0
+      maximumAge: 0,
+      timeout: 10000
     });
   });
 })();
